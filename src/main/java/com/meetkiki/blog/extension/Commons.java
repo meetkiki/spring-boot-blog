@@ -1,17 +1,12 @@
 package com.meetkiki.blog.extension;
 
-import com.blade.kit.*;
 import com.meetkiki.blog.bootstrap.TaleConst;
 import com.meetkiki.blog.controller.BaseController;
-import com.meetkiki.blog.model.dto.Page;
 import com.meetkiki.blog.service.SiteService;
 import com.meetkiki.blog.utils.DateUtils;
 import com.meetkiki.blog.utils.EncryptUtils;
 import com.meetkiki.blog.utils.TaleUtils;
-import com.tale.bootstrap.TaleConst;
-import com.tale.controller.BaseController;
-import com.tale.service.SiteService;
-import com.tale.utils.TaleUtils;
+import com.meetkiki.blog.utils.UUID;
 import com.vdurmont.emoji.EmojiParser;
 import io.github.biezhi.anima.page.Page;
 import org.springframework.util.CollectionUtils;

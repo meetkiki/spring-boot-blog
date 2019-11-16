@@ -1,20 +1,18 @@
 package com.meetkiki.blog.hooks;
 
-import com.blade.ioc.annotation.Bean;
-import com.blade.kit.DateKit;
-import com.blade.mvc.RouteContext;
-import com.blade.mvc.hook.WebHook;
-import com.tale.annotation.SysLog;
-import com.tale.bootstrap.TaleConst;
-import com.tale.model.entity.Logs;
-import com.tale.model.entity.Users;
-import com.tale.utils.TaleUtils;
+import com.meetkiki.blog.annotation.SysLog;
+import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.model.entity.Logs;
+import com.meetkiki.blog.model.entity.Users;
+import com.meetkiki.blog.utils.DateUtils;
+import com.meetkiki.blog.utils.TaleUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import static io.github.biezhi.anima.Anima.select;
 
-@Bean
 @Slf4j
+@Component
 public class BaseWebHook implements WebHook {
 
     @Override
@@ -57,7 +55,7 @@ public class BaseWebHook implements WebHook {
                 if(!context.request().uri().contains("upload")){
                     logs.setData(context.request().bodyToString());
                 }
-                logs.setCreated(DateKit.nowUnix());
+                logs.setCreated(DateUtils.nowUnix());
                 logs.save();
             }
         }
@@ -65,7 +63,7 @@ public class BaseWebHook implements WebHook {
     }
 
     private boolean isRedirect(RouteContext context) {
-        Users  user = TaleUtils.getLoginUser();
+        Users user = TaleUtils.getLoginUser();
         String uri  = context.uri();
         if (uri.startsWith(TaleConst.ADMIN_URI) && !uri.startsWith(TaleConst.LOGIN_URI)) {
             context.attribute(TaleConst.PLUGINS_MENU_NAME, TaleConst.PLUGIN_MENUS);

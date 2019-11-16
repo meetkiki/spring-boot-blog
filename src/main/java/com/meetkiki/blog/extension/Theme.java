@@ -1,22 +1,16 @@
 package com.meetkiki.blog.extension;
 
-import com.blade.kit.JsonKit;
-import com.blade.kit.StringKit;
-import com.blade.kit.json.Ason;
-import com.blade.mvc.WebContext;
-import com.blade.mvc.http.Request;
+import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.model.dto.Comment;
+import com.meetkiki.blog.model.dto.Types;
+import com.meetkiki.blog.model.entity.Comments;
+import com.meetkiki.blog.model.entity.Contents;
+import com.meetkiki.blog.model.entity.Metas;
 import com.meetkiki.blog.service.SiteService;
-import com.tale.bootstrap.TaleConst;
-import com.tale.model.dto.Comment;
-import com.tale.model.dto.Types;
-import com.tale.model.entity.Comments;
-import com.tale.model.entity.Contents;
-import com.tale.model.entity.Metas;
-import com.tale.service.SiteService;
-import com.tale.utils.TaleUtils;
+import com.meetkiki.blog.utils.StringUtils;
+import com.meetkiki.blog.utils.TaleUtils;
 import io.github.biezhi.anima.enums.OrderBy;
 import io.github.biezhi.anima.page.Page;
-import jetbrick.template.runtime.InterpretContext;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -112,7 +106,7 @@ public final class Theme {
      * @return
      */
     public static String permalink(Integer cid, String slug) {
-        return Commons.site_url("/article/" + (StringKit.isNotBlank(slug) ? slug : cid.toString()));
+        return Commons.site_url("/article/" + (StringUtils.isNotBlank(slug) ? slug : cid.toString()));
     }
 
     /**
@@ -174,7 +168,7 @@ public final class Theme {
      */
     public static List<String> category_list() {
         Contents contents = current_article();
-        if (null != contents && StringKit.isNotBlank(contents.getCategories())) {
+        if (null != contents && StringUtils.isNotBlank(contents.getCategories())) {
             return Arrays.asList(contents.getCategories().split(","));
         }
         return Collections.emptyList();
@@ -188,7 +182,7 @@ public final class Theme {
      */
     public static List<String> tag_list() {
         Contents contents = current_article();
-        if (null != contents && StringKit.isNotBlank(contents.getTags())) {
+        if (null != contents && StringUtils.isNotBlank(contents.getTags())) {
             return Arrays.asList(contents.getTags().split(","));
         }
         return Collections.emptyList();
@@ -201,7 +195,7 @@ public final class Theme {
      * @return
      */
     public static String show_categories(String categories) throws UnsupportedEncodingException {
-        if (StringKit.isNotBlank(categories)) {
+        if (StringUtils.isNotBlank(categories)) {
             String[]     arr  = categories.split(",");
             StringBuffer sbuf = new StringBuffer();
             for (String c : arr) {
@@ -220,7 +214,7 @@ public final class Theme {
      */
     public static String show_tags(String split) throws UnsupportedEncodingException {
         Contents contents = current_article();
-        if (StringKit.isNotBlank(contents.getTags())) {
+        if (StringUtils.isNotBlank(contents.getTags())) {
             String[]     arr  = contents.getTags().split(",");
             StringBuffer sbuf = new StringBuffer();
             for (String c : arr) {
@@ -291,7 +285,7 @@ public final class Theme {
      * @return 转换 markdown 为 html
      */
     public static String intro(String value) {
-        if (StringKit.isBlank(value)) {
+        if (StringUtils.isBlank(value)) {
             return null;
         }
         int pos = value.indexOf("<!--more-->");
@@ -331,7 +325,7 @@ public final class Theme {
      * @return
      */
     public static String article(String value) {
-        if (StringKit.isNotBlank(value)) {
+        if (StringUtils.isNotBlank(value)) {
             value = value.replace("<!--more-->", "\r\n");
             return TaleUtils.mdToHtml(value);
         }
@@ -347,14 +341,14 @@ public final class Theme {
         if (null == contents) {
             return "";
         }
-        if (StringKit.isNotBlank(contents.getThumbImg())) {
+        if (StringUtils.isNotBlank(contents.getThumbImg())) {
             String newFileName       = TaleUtils.getFileName(contents.getThumbImg());
             String thumbnailImgUrl = (contents.getThumbImg()).replace(newFileName, "thumbnail_" + newFileName);
             return thumbnailImgUrl;
         }
         String content = article(contents.getContent());
         String img     = Commons.show_thumb(content);
-        if (StringKit.isNotBlank(img)) {
+        if (StringUtils.isNotBlank(img)) {
             return img;
         }
         int cid  = contents.getCid();
@@ -725,7 +719,7 @@ public final class Theme {
      */
     public static String theme_option(String key, String defaultValue) {
         String option = theme_option(key);
-        if (StringKit.isBlank(option)) {
+        if (StringUtils.isBlank(option)) {
             return defaultValue;
         }
         return option;
@@ -740,7 +734,7 @@ public final class Theme {
     public static String theme_option(String key) {
         String theme = Commons.site_theme();
         return TaleConst.OPTIONS.get("theme_" + theme + "_options")
-                .filter(StringKit::isNotBlank)
+                .filter(StringUtils::isNotBlank)
                 .map((String json) -> {
                     Ason<?,?> ason = JsonKit.toAson(json);
                     if (!ason.containsKey(key)) {

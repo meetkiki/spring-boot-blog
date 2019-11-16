@@ -1,10 +1,22 @@
 package com.meetkiki.blog.controller;
 
+import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.model.dto.Archive;
+import com.meetkiki.blog.model.dto.Types;
+import com.meetkiki.blog.model.entity.Contents;
+import com.meetkiki.blog.service.SiteService;
+import com.meetkiki.blog.utils.TaleUtils;
+import io.github.biezhi.anima.enums.OrderBy;
+import io.github.biezhi.anima.page.Page;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.annotation.Resource;
 import java.util.List;
+
+import static io.github.biezhi.anima.Anima.select;
 
 /**
  * 首页、归档、Feed、评论
@@ -12,11 +24,11 @@ import java.util.List;
  * @author biezhi
  * @since 1.3.1
  */
-@RestController
+@Controller
 @Slf4j
 public class IndexController extends BaseController {
 
-    @Autowired
+    @Resource
     private SiteService siteService;
 
     /**
@@ -24,7 +36,7 @@ public class IndexController extends BaseController {
      *
      * @return
      */
-    @GetRoute
+    @GetMapping
     public String index(Request request, PageParam pageParam) {
         return this.index(request, 1, pageParam.getLimit());
     }
@@ -37,7 +49,7 @@ public class IndexController extends BaseController {
      * @param limit
      * @return
      */
-    @GetRoute(value = {"page/:page", "page/:page.html"})
+    @GetMapping(value = {"page/:page", "page/:page.html"})
     public String index(Request request, @PathParam int page, @Param(defaultValue = "12") int limit) {
         page = page < 0 || page > TaleConst.MAX_PAGE ? 1 : page;
         if (page > 1) {
@@ -57,18 +69,18 @@ public class IndexController extends BaseController {
      * @param keyword
      * @return
      */
-    @GetRoute(value = {"search/:keyword", "search/:keyword.html"})
+    @GetMapping(value = {"search/:keyword", "search/:keyword.html"})
     public String search(Request request, @PathParam String keyword, @Param(defaultValue = "12") int limit) {
         return this.search(request, keyword, 1, limit);
     }
 
-    @GetRoute(value = {"search", "search.html"})
+    @GetMapping(value = {"search", "search.html"})
     public String search(Request request, @Param(defaultValue = "12") int limit) {
         String keyword = request.query("s").orElse("");
         return this.search(request, keyword, 1, limit);
     }
 
-    @GetRoute(value = {"search/:keyword/:page", "search/:keyword/:page.html"})
+    @GetMapping(value = {"search/:keyword/:page", "search/:keyword/:page.html"})
     public String search(Request request, @PathParam String keyword, @PathParam int page, @Param(defaultValue = "12") int limit) {
 
         page = page < 0 || page > TaleConst.MAX_PAGE ? 1 : page;
@@ -92,7 +104,7 @@ public class IndexController extends BaseController {
      *
      * @return
      */
-    @GetRoute(value = {"archives", "archives.html"})
+    @GetMapping(value = {"archives", "archives.html"})
     public String archives(Request request) {
         List<Archive> archives = siteService.getArchives();
         request.attribute("archives", archives);
@@ -105,7 +117,7 @@ public class IndexController extends BaseController {
      *
      * @return
      */
-    @GetRoute(value = {"feed", "feed.xml", "atom.xml"})
+    @GetMapping(value = {"feed", "feed.xml", "atom.xml"})
     public void feed(Response response) {
 
         List<Contents> articles = select().from(Contents.class)
@@ -129,7 +141,7 @@ public class IndexController extends BaseController {
      *
      * @return
      */
-    @GetRoute(value = {"sitemap", "sitemap.xml"})
+    @GetMapping(value = {"sitemap", "sitemap.xml"})
     public void sitemap(Response response) {
         List<Contents> articles = select().from(Contents.class)
                 .where(Contents::getType, Types.ARTICLE)
@@ -149,7 +161,7 @@ public class IndexController extends BaseController {
     /**
      * 注销
      */
-    @Route(value = "logout")
+    @RequestMapping(value = "logout")
     public void logout(RouteContext context) {
         TaleUtils.logout(context);
     }

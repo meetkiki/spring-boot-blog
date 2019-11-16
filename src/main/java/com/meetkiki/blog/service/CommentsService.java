@@ -8,13 +8,18 @@ import com.meetkiki.blog.model.params.CommentParam;
 import com.meetkiki.blog.utils.DateUtils;
 import com.meetkiki.blog.utils.TaleUtils;
 import com.vdurmont.emoji.EmojiParser;
-import org.springframework.data.domain.Page;
+import io.github.biezhi.anima.Anima;
+import io.github.biezhi.anima.enums.OrderBy;
+import io.github.biezhi.anima.page.Page;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.meetkiki.blog.bootstrap.TaleConst.COMMENT_APPROVED;
+import static io.github.biezhi.anima.Anima.select;
+import static io.github.biezhi.anima.Anima.update;
 
 
 /**
@@ -124,7 +129,7 @@ public class CommentsService {
         List<Comments> children = new ArrayList<>();
         getChildren(children, comment.getCoid());
         comment.setChildren(children);
-        if (BladeKit.isNotEmpty(children)) {
+        if (!CollectionUtils.isEmpty(children)) {
             comment.setLevels(1);
         }
         return comment;

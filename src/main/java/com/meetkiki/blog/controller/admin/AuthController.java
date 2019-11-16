@@ -1,25 +1,21 @@
 package com.meetkiki.blog.controller.admin;
 
-import com.blade.exception.ValidatorException;
-import com.blade.kit.DateKit;
-import com.blade.kit.EncryptKit;
-import com.blade.kit.StringKit;
-import com.blade.mvc.RouteContext;
-import com.blade.mvc.annotation.Path;
-import com.blade.mvc.annotation.PostRoute;
-import com.blade.mvc.ui.RestResponse;
-import com.tale.annotation.SysLog;
-import com.tale.bootstrap.TaleConst;
-import com.tale.controller.BaseController;
-import com.tale.model.entity.Users;
-import com.tale.model.params.LoginParam;
-import com.tale.utils.TaleUtils;
-import com.tale.validators.CommonValidator;
+import com.meetkiki.blog.annotation.SysLog;
+import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.controller.BaseController;
+import com.meetkiki.blog.exception.ValidatorException;
+import com.meetkiki.blog.model.entity.Users;
+import com.meetkiki.blog.model.params.LoginParam;
+import com.meetkiki.blog.utils.DateUtils;
+import com.meetkiki.blog.utils.EncryptUtils;
+import com.meetkiki.blog.utils.StringUtils;
+import com.meetkiki.blog.utils.TaleUtils;
+import com.meetkiki.blog.validators.CommonValidator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.meetkiki.blog.bootstrap.TaleConst.LOGIN_ERROR_COUNT;
-import static com.tale.bootstrap.TaleConst.LOGIN_ERROR_COUNT;
 import static io.github.biezhi.anima.Anima.select;
 
 /**
@@ -32,7 +28,7 @@ import static io.github.biezhi.anima.Anima.select;
 public class AuthController extends BaseController {
 
     @SysLog("登录后台")
-    @PostRoute("login")
+    @PostMapping("login")
     public RestResponse<?> doLogin(LoginParam loginParam, RouteContext context) {
 
         CommonValidator.valid(loginParam);
@@ -49,7 +45,7 @@ public class AuthController extends BaseController {
                 errorCount += 1;
                 return RestResponse.fail("不存在该用户");
             }
-            String pwd = EncryptKit.md5(loginParam.getUsername(), loginParam.getPassword());
+            String pwd = EncryptUtils.md5(loginParam.getUsername(), loginParam.getPassword());
 
             Users user = select().from(Users.class)
                     .where(Users::getUsername, loginParam.getUsername())
@@ -61,12 +57,12 @@ public class AuthController extends BaseController {
             }
             context.session().attribute(TaleConst.LOGIN_SESSION_KEY, user);
 
-            if (StringKit.isNotBlank(loginParam.getRememberMe())) {
+            if (StringUtils.isNotBlank(loginParam.getRememberMe())) {
                 TaleUtils.setCookie(context, user.getUid());
             }
 
             Users temp = new Users();
-            temp.setLogged(DateKit.nowUnix());
+            temp.setLogged(DateUtils.nowUnix());
             temp.updateById(user.getUid());
             log.info("登录成功：{}", loginParam.getUsername());
 

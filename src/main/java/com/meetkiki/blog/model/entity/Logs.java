@@ -1,6 +1,7 @@
 package com.meetkiki.blog.model.entity;
 
 import com.blade.kit.DateKit;
+import com.meetkiki.blog.utils.DateUtils;
 import io.github.biezhi.anima.Model;
 import io.github.biezhi.anima.annotation.Table;
 import lombok.AllArgsConstructor;
@@ -53,7 +54,7 @@ public class Logs extends Model {
         this.data = data;
         this.ip = ip;
         this.authorId = uid;
-        this.created = DateKit.nowUnix();
+        this.created = DateUtils.nowUnix();
     }
 
 }

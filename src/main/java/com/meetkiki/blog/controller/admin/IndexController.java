@@ -1,28 +1,26 @@
 package com.meetkiki.blog.controller.admin;
 
-import com.blade.ioc.annotation.Inject;
-import com.blade.kit.DateKit;
-import com.blade.mvc.annotation.GetRoute;
-import com.blade.mvc.annotation.JSON;
-import com.blade.mvc.annotation.Path;
-import com.blade.mvc.annotation.PostRoute;
-import com.blade.mvc.http.Request;
-import com.blade.mvc.multipart.FileItem;
-import com.blade.mvc.ui.RestResponse;
-import com.tale.annotation.SysLog;
-import com.tale.bootstrap.TaleConst;
-import com.tale.controller.BaseController;
-import com.tale.model.dto.Statistics;
-import com.tale.model.dto.Types;
-import com.tale.model.entity.Attach;
-import com.tale.model.entity.Comments;
-import com.tale.model.entity.Contents;
-import com.tale.model.entity.Users;
-import com.tale.service.SiteService;
-import com.tale.utils.ImageUtils;
-import com.tale.utils.TaleUtils;
+import com.meetkiki.blog.annotation.SysLog;
+import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.controller.BaseController;
+import com.meetkiki.blog.model.dto.Statistics;
+import com.meetkiki.blog.model.dto.Types;
+import com.meetkiki.blog.model.entity.Attach;
+import com.meetkiki.blog.model.entity.Comments;
+import com.meetkiki.blog.model.entity.Contents;
+import com.meetkiki.blog.model.entity.Users;
+import com.meetkiki.blog.service.SiteService;
+import com.meetkiki.blog.utils.DateUtils;
+import com.meetkiki.blog.utils.ImageUtils;
+import com.meetkiki.blog.utils.TaleUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,28 +29,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.tale.bootstrap.TaleConst.CLASSPATH;
-
 /**
  * 后台控制器
  * Created by biezhi on 2017/2/21.
  */
 @Slf4j
-@Path("admin")
+@Controller("admin")
 public class IndexController extends BaseController {
 
 
-    @Inject
+    @Resource
     private SiteService siteService;
 
     /**
      * 仪表盘
      */
-    @GetRoute(value = {"/", "index"})
+    @GetMapping(value = {"/", "index"})
     public String index(Request request) {
         List<Comments> comments   = siteService.recentComments(5);
         List<Contents> contents   = siteService.getContens(Types.RECENT_ARTICLE, 5);
-        Statistics     statistics = siteService.getStatistics();
+        Statistics statistics = siteService.getStatistics();
 
         request.attribute("comments", comments);
         request.attribute("articles", contents);
@@ -63,7 +59,7 @@ public class IndexController extends BaseController {
     /**
      * 个人设置页面
      */
-    @GetRoute("profile")
+    @GetMapping("profile")
     public String profile() {
         return "admin/profile";
     }
@@ -72,13 +68,13 @@ public class IndexController extends BaseController {
      * 上传文件接口
      */
     @SysLog("上传附件")
-    @PostRoute("api/attach/upload")
-    @JSON
+    @PostMapping("api/attach/upload")
+    @ResponseBody
     public RestResponse<?> upload(Request request) {
 
         log.info("UPLOAD DIR = {}", TaleUtils.UP_DIR);
 
-        Users        users      = this.user();
+        Users users      = this.user();
         Integer      uid        = users.getUid();
         List<Attach> errorFiles = new ArrayList<>();
         List<Attach> urls       = new ArrayList<>();
@@ -114,7 +110,7 @@ public class IndexController extends BaseController {
                 attach.setAuthorId(uid);
                 attach.setFkey(fkey);
                 attach.setFtype(ftype);
-                attach.setCreated(DateKit.nowUnix());
+                attach.setCreated(DateUtils.nowUnix());
                 attach.save();
 
                 urls.add(attach);

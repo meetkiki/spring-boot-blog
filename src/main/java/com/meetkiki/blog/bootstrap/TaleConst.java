@@ -1,10 +1,7 @@
 package com.meetkiki.blog.bootstrap;
 
 
-import com.blade.Environment;
 import com.meetkiki.blog.controller.admin.AdminApiController;
-import com.tale.controller.admin.AdminApiController;
-import com.tale.model.dto.PluginMenu;
 
 import java.io.File;
 import java.util.*;

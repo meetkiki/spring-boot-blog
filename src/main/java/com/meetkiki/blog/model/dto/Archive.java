@@ -1,6 +1,6 @@
 package com.meetkiki.blog.model.dto;
 
-import com.tale.model.entity.Contents;
+import com.meetkiki.blog.model.entity.Contents;
 import io.github.biezhi.anima.Model;
 import lombok.Data;
 

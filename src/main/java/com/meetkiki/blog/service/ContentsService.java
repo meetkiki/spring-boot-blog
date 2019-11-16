@@ -1,33 +1,22 @@
 package com.meetkiki.blog.service;
 
-import com.blade.exception.ValidatorException;
-import com.blade.ioc.annotation.Bean;
-import com.blade.ioc.annotation.Inject;
-import com.blade.kit.DateKit;
-import com.blade.kit.StringKit;
 import com.meetkiki.blog.exception.ValidatorException;
+import com.meetkiki.blog.model.dto.Types;
 import com.meetkiki.blog.model.entity.Comments;
 import com.meetkiki.blog.model.entity.Contents;
 import com.meetkiki.blog.model.entity.Relationships;
 import com.meetkiki.blog.model.params.ArticleParam;
 import com.meetkiki.blog.utils.DateUtils;
 import com.meetkiki.blog.utils.PatternUtils;
-import com.tale.model.dto.Types;
-import com.tale.model.entity.Comments;
-import com.tale.model.entity.Contents;
-import com.tale.model.entity.Relationships;
-import com.tale.model.params.ArticleParam;
 import com.vdurmont.emoji.EmojiParser;
 import io.github.biezhi.anima.Anima;
 import io.github.biezhi.anima.core.AnimaQuery;
 import io.github.biezhi.anima.page.Page;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import static com.meetkiki.blog.bootstrap.TaleConst.SQL_QUERY_ARTICLES;
-import static com.tale.bootstrap.TaleConst.SQL_QUERY_ARTICLES;
 import static io.github.biezhi.anima.Anima.deleteById;
 import static io.github.biezhi.anima.Anima.select;
 
@@ -98,7 +87,7 @@ public class ContentsService {
      */
     public void updateArticle(Contents contents) {
         contents.setCreated(contents.getCreated());
-        contents.setModified(DateKit.nowUnix());
+        contents.setModified(DateUtils.nowUnix());
         contents.setContent(EmojiParser.parseToAliases(contents.getContent()));
         contents.setTags(contents.getTags() != null ? contents.getTags() : "");
         contents.setCategories(contents.getCategories() != null ? contents.getCategories() : "");

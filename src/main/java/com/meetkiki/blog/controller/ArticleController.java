@@ -7,6 +7,16 @@ import com.blade.mvc.annotation.*;
 import com.blade.mvc.http.Request;
 import com.blade.mvc.http.Response;
 import com.blade.mvc.ui.RestResponse;
+import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.exception.ValidatorException;
+import com.meetkiki.blog.model.dto.Types;
+import com.meetkiki.blog.model.entity.Comments;
+import com.meetkiki.blog.model.entity.Contents;
+import com.meetkiki.blog.service.CommentsService;
+import com.meetkiki.blog.service.ContentsService;
+import com.meetkiki.blog.service.SiteService;
+import com.meetkiki.blog.utils.StringUtils;
+import com.meetkiki.blog.validators.CommonValidator;
 import com.tale.bootstrap.TaleConst;
 import com.tale.extension.Commons;
 import com.tale.model.dto.ErrorCode;
@@ -18,32 +28,41 @@ import com.tale.service.ContentsService;
 import com.tale.service.SiteService;
 import com.tale.validators.CommonValidator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.annotation.Resource;
 import java.net.URLEncoder;
 
+import static com.meetkiki.blog.bootstrap.TaleConst.COMMENT_APPROVED;
+import static com.meetkiki.blog.bootstrap.TaleConst.COMMENT_NO_AUDIT;
+import static com.meetkiki.blog.bootstrap.TaleConst.OPTION_ALLOW_COMMENT_AUDIT;
 import static com.tale.bootstrap.TaleConst.*;
 
 /**
  * @author biezhi
  * @date 2018/6/4
  */
-@Path
+
 @Slf4j
+@Controller
 public class ArticleController extends BaseController {
 
-    @Inject
+    @Resource
     private ContentsService contentsService;
 
-    @Inject
+    @Resource
     private CommentsService commentsService;
 
-    @Inject
+    @Resource
     private SiteService siteService;
 
     /**
      * 自定义页面
      */
-    @GetRoute(value = {"/:cid", "/:cid.html"})
+    @GetMapping(value = {"/:cid", "/:cid.html"})
     public String page(@PathParam String cid, Request request) {
         Contents contents = contentsService.getContents(cid);
         if (null == contents) {
@@ -69,7 +88,7 @@ public class ArticleController extends BaseController {
     /**
      * 文章页
      */
-    @GetRoute(value = {"article/:cid", "article/:cid.html"})
+    @GetMapping(value = {"article/:cid", "article/:cid.html"})
     public String post(Request request, @PathParam String cid) {
         Contents contents = contentsService.getContents(cid);
         if (null == contents) {
@@ -93,12 +112,12 @@ public class ArticleController extends BaseController {
     /**
      * 评论操作
      */
-    @PostRoute(value = "comment")
-    @JSON
+    @PostMapping(value = "comment")
+    @ResponseBody
     public RestResponse<?> comment(Request request, Response response,
                                    @HeaderParam String Referer, Comments comments) {
 
-        if (StringKit.isBlank(Referer)) {
+        if (StringUtils.isBlank(Referer)) {
             return RestResponse.fail(ErrorCode.BAD_REQUEST);
         }
 
@@ -126,7 +145,7 @@ public class ArticleController extends BaseController {
             commentsService.saveComment(comments);
             response.cookie("tale_remember_author", URLEncoder.encode(comments.getAuthor(), "UTF-8"), 7 * 24 * 60 * 60);
             response.cookie("tale_remember_mail", URLEncoder.encode(comments.getMail(), "UTF-8"), 7 * 24 * 60 * 60);
-            if (StringKit.isNotBlank(comments.getUrl())) {
+            if (StringUtils.isNotBlank(comments.getUrl())) {
                 response.cookie("tale_remember_url", URLEncoder.encode(comments.getUrl(), "UTF-8"), 7 * 24 * 60 * 60);
             }
 

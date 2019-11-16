@@ -6,6 +6,12 @@ import com.blade.mvc.annotation.Param;
 import com.blade.mvc.annotation.Path;
 import com.blade.mvc.annotation.PathParam;
 import com.blade.mvc.http.Request;
+import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.model.dto.Types;
+import com.meetkiki.blog.model.entity.Contents;
+import com.meetkiki.blog.model.entity.Metas;
+import com.meetkiki.blog.service.ContentsService;
+import com.meetkiki.blog.service.MetasService;
 import com.tale.bootstrap.TaleConst;
 import com.tale.model.dto.Types;
 import com.tale.model.entity.Contents;
@@ -13,7 +19,10 @@ import com.tale.model.entity.Metas;
 import com.tale.service.ContentsService;
 import com.tale.service.MetasService;
 import io.github.biezhi.anima.page.Page;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,13 +33,13 @@ import java.util.Set;
  * @author biezhi
  * @date 2017/9/17
  */
-@Path
+@Controller
 public class CategoryController extends BaseController {
 
-    @Inject
+    @Resource
     private ContentsService contentsService;
 
-    @Inject
+    @Resource
     private MetasService metasService;
 
     /**
@@ -38,7 +47,7 @@ public class CategoryController extends BaseController {
      *
      * @since 1.3.1
      */
-    @GetRoute(value = {"categories", "categories.html"})
+    @GetMapping(value = {"categories", "categories.html"})
     public String categories(Request request) {
         Map<String, List<Contents>> mapping    = metasService.getMetaMapping(Types.CATEGORY);
         Set<String>                 categories = mapping.keySet();
@@ -50,7 +59,7 @@ public class CategoryController extends BaseController {
     /**
      * 某个分类详情页
      */
-    @GetRoute(value = {"category/:keyword", "category/:keyword.html"})
+    @GetMapping(value = {"category/:keyword", "category/:keyword.html"})
     public String categories(Request request, @PathParam String keyword, @Param(defaultValue = "12") int limit) {
         return this.categories(request, keyword, 1, limit);
     }
@@ -58,7 +67,7 @@ public class CategoryController extends BaseController {
     /**
      * 某个分类详情页分页
      */
-    @GetRoute(value = {"category/:keyword/:page", "category/:keyword/:page.html"})
+    @GetMapping(value = {"category/:keyword/:page", "category/:keyword/:page.html"})
     public String categories(Request request, @PathParam String keyword,
                              @PathParam int page, @Param(defaultValue = "12") int limit) {
 
@@ -86,7 +95,7 @@ public class CategoryController extends BaseController {
      *
      * @since 1.3.1
      */
-    @GetRoute(value = {"tags", "tags.html"})
+    @GetMapping(value = {"tags", "tags.html"})
     public String tags(Request request) {
         Map<String, List<Contents>> mapping = metasService.getMetaMapping(Types.TAG);
         Set<String>                 tags    = mapping.keySet();
@@ -100,7 +109,7 @@ public class CategoryController extends BaseController {
      *
      * @param name 标签名
      */
-    @GetRoute(value = {"tag/:name", "tag/:name.html"})
+    @GetMapping(value = {"tag/:name", "tag/:name.html"})
     public String tagPage(Request request, @PathParam String name, @Param(defaultValue = "12") int limit) {
         return this.tags(request, name, 1, limit);
     }
@@ -108,7 +117,7 @@ public class CategoryController extends BaseController {
     /**
      * 标签下文章分页
      */
-    @GetRoute(value = {"tag/:name/:page", "tag/:name/:page.html"})
+    @GetMapping(value = {"tag/:name/:page", "tag/:name/:page.html"})
     public String tags(Request request, @PathParam String name, @PathParam int page, @Param(defaultValue = "12") int limit) {
         page = page < 0 || page > TaleConst.MAX_PAGE ? 1 : page;
         Metas metaDto = metasService.getMeta(Types.TAG, name);

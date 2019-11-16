@@ -1,20 +1,49 @@
 package com.meetkiki.blog.controller.admin;
 
+import com.meetkiki.blog.annotation.SysLog;
+import com.meetkiki.blog.bootstrap.TaleConst;
 import com.meetkiki.blog.controller.BaseController;
+import com.meetkiki.blog.extension.Commons;
+import com.meetkiki.blog.model.dto.ThemeDto;
+import com.meetkiki.blog.model.dto.Types;
+import com.meetkiki.blog.model.entity.Attach;
+import com.meetkiki.blog.model.entity.Comments;
+import com.meetkiki.blog.model.entity.Contents;
 import com.meetkiki.blog.model.entity.Logs;
+import com.meetkiki.blog.model.entity.Metas;
+import com.meetkiki.blog.model.entity.Users;
+import com.meetkiki.blog.model.params.AdvanceParam;
+import com.meetkiki.blog.model.params.ArticleParam;
+import com.meetkiki.blog.model.params.CommentParam;
+import com.meetkiki.blog.model.params.MetaParam;
 import com.meetkiki.blog.model.params.PageParam;
+import com.meetkiki.blog.model.params.TemplateParam;
 import com.meetkiki.blog.service.*;
+import com.meetkiki.blog.utils.StringUtils;
+import com.meetkiki.blog.validators.CommonValidator;
+import io.github.biezhi.anima.Anima;
+import io.github.biezhi.anima.enums.OrderBy;
+import io.github.biezhi.anima.page.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.websocket.server.PathParam;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+
+import static com.meetkiki.blog.bootstrap.TaleConst.CLASSPATH;
+import static com.meetkiki.blog.bootstrap.TaleConst.OPTION_ALLOW_CLOUD_CDN;
+import static com.meetkiki.blog.bootstrap.TaleConst.OPTION_ALLOW_COMMENT_AUDIT;
+import static com.meetkiki.blog.bootstrap.TaleConst.OPTION_ALLOW_INSTALL;
+import static com.meetkiki.blog.bootstrap.TaleConst.OPTION_CDN_URL;
+import static io.github.biezhi.anima.Anima.select;
 
 /**
  * @author biezhi
@@ -45,27 +74,27 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("删除页面")
-    @PostRoute("page/delete/:cid")
+    @PostMapping("page/delete/:cid")
     public RestResponse<?> deletePage(@PathParam Integer cid) {
         contentsService.delete(cid);
         siteService.cleanCache(Types.SYS_STATISTICS);
         return RestResponse.ok();
     }
 
-    @GetRoute("articles/:cid")
+    @GetMapping("articles/:cid")
     public RestResponse article(@PathParam String cid) {
         Contents contents = contentsService.getContents(cid);
         contents.setContent("");
         return RestResponse.ok(contents);
     }
 
-    @GetRoute("articles/content/:cid")
+    @GetMapping("articles/content/:cid")
     public void articleContent(@PathParam String cid, Response response) {
         Contents contents = contentsService.getContents(cid);
         response.text(contents.getContent());
     }
 
-    @PostRoute("article/new")
+    @PostMapping("article/new")
     public RestResponse newArticle(@BodyParam Contents contents) {
         CommonValidator.valid(contents);
 
@@ -93,14 +122,14 @@ public class AdminApiController extends BaseController {
         return RestResponse.ok(cid);
     }
 
-    @PostRoute("article/delete/:cid")
+    @PostMapping("article/delete/:cid")
     public RestResponse<?> deleteArticle(@PathParam Integer cid) {
         contentsService.delete(cid);
         siteService.cleanCache(Types.SYS_STATISTICS);
         return RestResponse.ok();
     }
 
-    @PostRoute("article/update")
+    @PostMapping("article/update")
     public RestResponse updateArticle(@BodyParam Contents contents) {
         if (null == contents || null == contents.getCid()) {
             return RestResponse.fail("缺少参数，请重试");
@@ -121,7 +150,7 @@ public class AdminApiController extends BaseController {
         return RestResponse.ok(cid);
     }
 
-    @GetRoute("articles")
+    @GetMapping("articles")
     public RestResponse articleList(ArticleParam articleParam) {
         articleParam.setType(Types.ARTICLE);
         articleParam.setOrderBy("created desc");
@@ -129,7 +158,7 @@ public class AdminApiController extends BaseController {
         return RestResponse.ok(articles);
     }
 
-    @GetRoute("pages")
+    @GetMapping("pages")
     public RestResponse pageList(ArticleParam articleParam) {
         articleParam.setType(Types.PAGE);
         articleParam.setOrderBy("created desc");
@@ -138,7 +167,7 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("发布页面")
-    @PostRoute("page/new")
+    @PostMapping("page/new")
     public RestResponse<?> newPage(@BodyParam Contents contents) {
 
         CommonValidator.valid(contents);
@@ -153,7 +182,7 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("修改页面")
-    @PostRoute("page/update")
+    @PostMapping("page/update")
     public RestResponse<?> updatePage(@BodyParam Contents contents) {
         CommonValidator.valid(contents);
 
@@ -167,7 +196,7 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("保存分类")
-    @PostRoute("category/save")
+    @PostMapping("category/save")
     public RestResponse<?> saveCategory(@BodyParam MetaParam metaParam) {
         metasService.saveMeta(Types.CATEGORY, metaParam.getCname(), metaParam.getMid());
         siteService.cleanCache(Types.SYS_STATISTICS);
@@ -175,14 +204,14 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("删除分类/标签")
-    @PostRoute("category/delete/:mid")
+    @PostMapping("category/delete/:mid")
     public RestResponse<?> deleteMeta(@PathParam Integer mid) {
         metasService.delete(mid);
         siteService.cleanCache(Types.SYS_STATISTICS);
         return RestResponse.ok();
     }
 
-    @GetRoute("comments")
+    @GetMapping("comments")
     public RestResponse commentList(CommentParam commentParam) {
         Users users = this.user();
         commentParam.setExcludeUID(users.getUid());
@@ -192,7 +221,7 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("删除评论")
-    @PostRoute("comment/delete/:coid")
+    @PostMapping("comment/delete/:coid")
     public RestResponse<?> deleteComment(@PathParam Integer coid) {
         Comments comments = select().from(Comments.class).byId(coid);
         if (null == comments) {
@@ -204,7 +233,7 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("修改评论状态")
-    @PostRoute("comment/status")
+    @PostMapping("comment/status")
     public RestResponse<?> updateStatus(@BodyParam Comments comments) {
         comments.update();
         siteService.cleanCache(Types.SYS_STATISTICS);
@@ -212,7 +241,7 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("回复评论")
-    @PostRoute("comment/reply")
+    @PostMapping("comment/reply")
     public RestResponse<?> replyComment(@BodyParam Comments comments, Request request) {
         CommonValidator.validAdmin(comments);
 
@@ -227,7 +256,7 @@ public class AdminApiController extends BaseController {
         comments.setIp(request.address());
         comments.setUrl(users.getHomeUrl());
 
-        if (StringKit.isNotBlank(users.getEmail())) {
+        if (StringUtils.isNotBlank(users.getEmail())) {
             comments.setMail(users.getEmail());
         } else {
             comments.setMail("");
@@ -239,7 +268,7 @@ public class AdminApiController extends BaseController {
         return RestResponse.ok();
     }
 
-    @GetRoute("attaches")
+    @GetMapping("attaches")
     public RestResponse attachList(PageParam pageParam) {
 
         Page<Attach> attachPage = select().from(Attach.class)
@@ -250,7 +279,7 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("删除附件")
-    @PostRoute("attach/delete/:id")
+    @PostMapping("attach/delete/:id")
     public RestResponse<?> deleteAttach(@PathParam Integer id) throws IOException {
         Attach attach = select().from(Attach.class).byId(id);
         if (null == attach) {
@@ -268,26 +297,26 @@ public class AdminApiController extends BaseController {
         return RestResponse.ok();
     }
 
-    @GetRoute("categories")
+    @GetMapping("categories")
     public RestResponse categoryList() {
         List<Metas> categories = siteService.getMetas(Types.RECENT_META, Types.CATEGORY, TaleConst.MAX_POSTS);
         return RestResponse.ok(categories);
     }
 
-    @GetRoute("tags")
+    @GetMapping("tags")
     public RestResponse tagList() {
         List<Metas> tags = siteService.getMetas(Types.RECENT_META, Types.TAG, TaleConst.MAX_POSTS);
         return RestResponse.ok(tags);
     }
 
-    @GetRoute("options")
+    @GetMapping("options")
     public RestResponse options() {
         Map<String, String> options = optionsService.getOptions();
         return RestResponse.ok(options);
     }
 
     @SysLog("保存系统配置")
-    @PostRoute("options/save")
+    @PostMapping("options/save")
     public RestResponse<?> saveOptions(Request request) {
         Map<String, List<String>> querys = request.parameters();
         querys.forEach((k, v) -> optionsService.saveOption(k, v.get(0)));
@@ -297,10 +326,10 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("保存高级选项设置")
-    @PostRoute("advanced/save")
+    @PostMapping("advanced/save")
     public RestResponse<?> saveAdvance(AdvanceParam advanceParam) {
         // 清除缓存
-        if (StringKit.isNotBlank(advanceParam.getCacheKey())) {
+        if (StringUtils.isNotBlank(advanceParam.getCacheKey())) {
             if ("*".equals(advanceParam.getCacheKey())) {
                 cache.clean();
             } else {
@@ -308,7 +337,7 @@ public class AdminApiController extends BaseController {
             }
         }
         // 要过过滤的黑名单列表
-        if (StringKit.isNotBlank(advanceParam.getBlockIps())) {
+        if (StringUtils.isNotBlank(advanceParam.getBlockIps())) {
             optionsService.saveOption(Types.BLOCK_IPS, advanceParam.getBlockIps());
             TaleConst.BLOCK_IPS.addAll(Arrays.asList(advanceParam.getBlockIps().split(",")));
         } else {
@@ -316,7 +345,7 @@ public class AdminApiController extends BaseController {
             TaleConst.BLOCK_IPS.clear();
         }
         // 处理卸载插件
-        if (StringKit.isNotBlank(advanceParam.getPluginName())) {
+        if (StringUtils.isNotBlank(advanceParam.getPluginName())) {
             String key = "plugin_";
             // 卸载所有插件
             if (!"*".equals(advanceParam.getPluginName())) {
@@ -327,32 +356,32 @@ public class AdminApiController extends BaseController {
             optionsService.deleteOption(key);
         }
 
-        if (StringKit.isNotBlank(advanceParam.getCdnURL())) {
+        if (StringUtils.isNotBlank(advanceParam.getCdnURL())) {
             optionsService.saveOption(OPTION_CDN_URL, advanceParam.getCdnURL());
             TaleConst.OPTIONS.set(OPTION_CDN_URL, advanceParam.getCdnURL());
         }
 
         // 是否允许重新安装
-        if (StringKit.isNotBlank(advanceParam.getAllowInstall())) {
+        if (StringUtils.isNotBlank(advanceParam.getAllowInstall())) {
             optionsService.saveOption(OPTION_ALLOW_INSTALL, advanceParam.getAllowInstall());
             TaleConst.OPTIONS.set(OPTION_ALLOW_INSTALL, advanceParam.getAllowInstall());
         }
 
         // 评论是否需要审核
-        if (StringKit.isNotBlank(advanceParam.getAllowCommentAudit())) {
+        if (StringUtils.isNotBlank(advanceParam.getAllowCommentAudit())) {
             optionsService.saveOption(OPTION_ALLOW_COMMENT_AUDIT, advanceParam.getAllowCommentAudit());
             TaleConst.OPTIONS.set(OPTION_ALLOW_COMMENT_AUDIT, advanceParam.getAllowCommentAudit());
         }
 
         // 是否允许公共资源CDN
-        if (StringKit.isNotBlank(advanceParam.getAllowCloudCDN())) {
+        if (StringUtils.isNotBlank(advanceParam.getAllowCloudCDN())) {
             optionsService.saveOption(OPTION_ALLOW_CLOUD_CDN, advanceParam.getAllowCloudCDN());
             TaleConst.OPTIONS.set(OPTION_ALLOW_CLOUD_CDN, advanceParam.getAllowCloudCDN());
         }
         return RestResponse.ok();
     }
 
-    @GetRoute("themes")
+    @GetMapping("themes")
     public RestResponse getThemes() {
         // 读取主题
         String         themesDir  = CLASSPATH + "templates/themes";
@@ -375,7 +404,7 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("保存主题设置")
-    @PostRoute("themes/setting")
+    @PostMapping("themes/setting")
     public RestResponse<?> saveSetting(Request request) {
         Map<String, List<String>> query = request.parameters();
 
@@ -393,7 +422,7 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("激活主题")
-    @PostRoute("themes/active")
+    @PostMapping("themes/active")
     public RestResponse<?> activeTheme(@BodyParam ThemeParam themeParam) {
         optionsService.saveOption(OPTION_SITE_THEME, themeParam.getSiteTheme());
         delete().from(Options.class).where(Options::getName).like("theme_option_%").execute();
@@ -410,9 +439,9 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("保存模板")
-    @PostRoute("template/save")
+    @PostMapping("template/save")
     public RestResponse<?> saveTpl(@BodyParam TemplateParam templateParam) throws IOException {
-        if (StringKit.isBlank(templateParam.getFileName())) {
+        if (StringUtils.isBlank(templateParam.getFileName())) {
             return RestResponse.fail("缺少参数，请重试");
         }
         String content   = templateParam.getContent();

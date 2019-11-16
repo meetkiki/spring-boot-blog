@@ -1,23 +1,16 @@
 package com.meetkiki.blog.controller.admin;
 
-import com.blade.ioc.annotation.Inject;
-import com.blade.kit.JsonKit;
-import com.blade.kit.StringKit;
-import com.blade.mvc.Const;
-import com.blade.mvc.annotation.GetRoute;
-import com.blade.mvc.annotation.Param;
-import com.blade.mvc.annotation.Path;
-import com.blade.mvc.annotation.PathParam;
-import com.blade.mvc.http.Request;
-import com.blade.mvc.http.Response;
-import com.tale.controller.BaseController;
-import com.tale.extension.Commons;
-import com.tale.service.ContentsService;
-import com.tale.service.MetasService;
-import com.tale.service.OptionsService;
-import com.tale.service.SiteService;
+import com.meetkiki.blog.controller.BaseController;
+import com.meetkiki.blog.service.ContentsService;
+import com.meetkiki.blog.service.MetasService;
+import com.meetkiki.blog.service.OptionsService;
+import com.meetkiki.blog.service.SiteService;
+import com.meetkiki.blog.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,42 +25,42 @@ import java.util.stream.Collectors;
  * @date 2018/6/5
  */
 @Slf4j
-@Path("admin")
+@Controller("admin")
 public class PagesController extends BaseController {
 
-    @Inject
+    @Resource
     private ContentsService contentsService;
 
-    @Inject
+    @Resource
     private MetasService metasService;
 
-    @Inject
+    @Resource
     private OptionsService optionsService;
 
-    @Inject
+    @Resource
     private SiteService siteService;
 
-    @GetRoute("/:page")
+    @GetMapping("/:page")
     public String commonPage(@PathParam String page) {
         return "admin/" + page + ".html";
     }
 
-    @GetRoute("/:module/:page")
+    @GetMapping("/:module/:page")
     public String commonPage(@PathParam String module, @PathParam String page) {
         return "admin/" + module + "/" + page + ".html";
     }
 
-    @GetRoute("/article/edit/:cid")
+    @GetMapping("/article/edit/:cid")
     public String editArticle(@PathParam String cid) {
         return "admin/article/edit.html";
     }
 
-    @GetRoute("/page/edit/:cid")
+    @GetMapping("/page/edit/:cid")
     public String editPage(@PathParam String cid) {
         return "admin/page/edit.html";
     }
 
-    @GetRoute("login")
+    @GetMapping("login")
     public String login(Response response) {
         if (null != this.user()) {
             response.redirect("/admin/index");
@@ -76,7 +69,7 @@ public class PagesController extends BaseController {
         return "admin/login";
     }
 
-    @GetRoute("template")
+    @GetMapping("template")
     public String index(Request request) {
         String themePath = Const.CLASSPATH + File.separatorChar + "templates" + File.separatorChar + "themes" + File.separatorChar + Commons.site_theme();
         try {
@@ -107,7 +100,7 @@ public class PagesController extends BaseController {
         return "admin/tpl_list";
     }
 
-    @GetRoute("template/content")
+    @GetMapping("template/content")
     public void getContent(@Param String fileName, Response response) {
         try {
             String themePath = Const.CLASSPATH + File.separatorChar + "templates" + File.separatorChar + "themes" + File.separatorChar + Commons.site_theme();
@@ -122,7 +115,7 @@ public class PagesController extends BaseController {
     /**
      * 主题设置页面
      */
-    @GetRoute("theme/setting")
+    @GetMapping("theme/setting")
     public String setting(Request request) {
         String currentTheme = Commons.site_theme();
         String key          = "theme_" + currentTheme + "_options";
@@ -130,7 +123,7 @@ public class PagesController extends BaseController {
         String              option = optionsService.getOption(key);
         Map<String, Object> map    = new HashMap<>();
         try {
-            if (StringKit.isNotBlank(option)) {
+            if (StringUtils.isNotBlank(option)) {
                 map = (Map<String, Object>) JsonKit.toAson(option);
             }
             request.attribute("options", map);

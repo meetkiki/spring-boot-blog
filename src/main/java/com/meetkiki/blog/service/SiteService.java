@@ -1,18 +1,29 @@
 package com.meetkiki.blog.service;
 
+import com.meetkiki.blog.bootstrap.SqliteJdbc;
 import com.meetkiki.blog.bootstrap.TaleConst;
 import com.meetkiki.blog.exception.ValidatorException;
-import com.meetkiki.blog.model.dto.Page;
+import com.meetkiki.blog.model.dto.Archive;
+import com.meetkiki.blog.model.dto.BackResponse;
+import com.meetkiki.blog.model.dto.Comment;
+import com.meetkiki.blog.model.dto.Statistics;
 import com.meetkiki.blog.model.dto.Types;
+import com.meetkiki.blog.model.entity.Attach;
 import com.meetkiki.blog.model.entity.Comments;
 import com.meetkiki.blog.model.entity.Contents;
 import com.meetkiki.blog.model.entity.Logs;
+import com.meetkiki.blog.model.entity.Metas;
 import com.meetkiki.blog.model.entity.Users;
 import com.meetkiki.blog.utils.DateUtils;
 import com.meetkiki.blog.utils.EncryptUtils;
 import com.meetkiki.blog.utils.MapCache;
+import com.meetkiki.blog.utils.StringUtils;
+import com.meetkiki.blog.utils.TaleUtils;
+import io.github.biezhi.anima.enums.OrderBy;
+import io.github.biezhi.anima.page.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -21,6 +32,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.meetkiki.blog.bootstrap.TaleConst.COMMENT_APPROVED;
+import static io.github.biezhi.anima.Anima.select;
 
 
 /**
@@ -105,7 +117,7 @@ public class SiteService {
             List<Integer> cids = select().bySQL(Integer.class,
                                                 "select cid from t_contents where type = ? and status = ? order by random() * cid limit ?",
                                                 Types.ARTICLE, Types.PUBLISH, limit).all();
-            if (BladeKit.isNotEmpty(cids)) {
+            if (!CollectionUtils.isEmpty(cids)) {
                 return select().from(Contents.class).in(Contents::getCid, cids).all();
             }
         }
@@ -164,14 +176,14 @@ public class SiteService {
 
     private Archive parseArchive(Archive archive) {
         String dateStr = archive.getDateStr();
-        Date   sd      = DateKit.toDate(dateStr + "01", "yyyy年MM月dd");
+        Date   sd      = DateUtils.toDate(dateStr + "01", "yyyy年MM月dd");
         archive.setDate(sd);
-        int      start    = DateKit.toUnix(sd);
+        int      start    = DateUtils.toUnix(sd);
         Calendar calender = Calendar.getInstance();
         calender.setTime(sd);
         calender.add(Calendar.MONTH, 1);
         Date endSd = calender.getTime();
-        int  end   = DateKit.toUnix(endSd) - 1;
+        int  end   = DateUtils.toUnix(endSd) - 1;
 
         List<Contents> contents = select().from(Contents.class)
                                           .where(Contents::getType, Types.ARTICLE)
@@ -203,7 +215,7 @@ public class SiteService {
     public BackResponse backup(String bkType, String bkPath, String fmt) throws Exception {
         BackResponse backResponse = new BackResponse();
         if ("attach".equals(bkType)) {
-            if (StringKit.isBlank(bkPath)) {
+            if (StringUtils.isNotBlank(bkPath)) {
                 throw new ValidatorException("请输入备份文件存储路径");
             }
             if (!Files.isDirectory(Paths.get(bkPath))) {
@@ -212,7 +224,7 @@ public class SiteService {
             String bkAttachDir = CLASSPATH + "upload";
             String bkThemesDir = CLASSPATH + "templates/themes";
 
-            String fname = DateKit.toString(new Date(), fmt) + "_" + StringKit.rand(5) + ".zip";
+            String fname = DateUtils.toString(new Date(), fmt) + "_" + StringUtils.rand(5) + ".zip";
 
             String attachPath = bkPath + "/" + "attachs_" + fname;
             String themesPath = bkPath + "/" + "themes_" + fname;
@@ -222,8 +234,8 @@ public class SiteService {
         }
         // 备份数据库
         if ("db".equals(bkType)) {
-            String filePath = "upload/" + DateKit.toString(new Date(), "yyyyMMddHHmmss") + "_"
-                + StringKit.rand(8) + ".db";
+            String filePath = "upload/" + DateUtils.toString(new Date(), "yyyyMMddHHmmss") + "_"
+                + StringUtils.rand(8) + ".db";
             String cp = CLASSPATH + filePath;
             Files.createDirectory(Paths.get(cp));
             Files.copy(Paths.get(SqliteJdbc.DB_PATH), Paths.get(cp));
@@ -244,7 +256,7 @@ public class SiteService {
      */
     public List<Metas> getMetas(String searchType, String type, int limit) {
 
-        if (StringKit.isBlank(searchType) || StringKit.isBlank(type)) {
+        if (StringUtils.isBlank(searchType) || StringUtils.isBlank(type)) {
             return new ArrayList<>(0);
         }
 
@@ -267,7 +279,7 @@ public class SiteService {
             List<Integer> mids = select().bySQL(Integer.class,
                                                 "select mid from t_metas where type = ? order by random() * mid limit ?",
                                                 type, limit).all();
-            if (BladeKit.isNotEmpty(mids)) {
+            if (!CollectionUtils.isEmpty(mids)) {
                 String in = TaleUtils.listToInSql(mids);
                 String sql =
                     "select a.*, count(b.cid) as count from t_metas a left join `t_relationships` b on a.mid = b.mid "
@@ -327,7 +339,7 @@ public class SiteService {
      * @param key 缓存key
      */
     public void cleanCache(String key) {
-        if (StringKit.isNotBlank(key)) {
+        if (StringUtils.isNotBlank(key)) {
             if ("*".equals(key)) {
                 mapCache.clean();
             } else {

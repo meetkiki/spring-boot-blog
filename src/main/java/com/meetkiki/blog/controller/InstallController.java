@@ -1,15 +1,25 @@
 package com.meetkiki.blog.controller;
 
 
+import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.model.entity.Users;
+import com.meetkiki.blog.model.params.InstallParam;
+import com.meetkiki.blog.service.OptionsService;
+import com.meetkiki.blog.service.SiteService;
+import com.meetkiki.blog.utils.TaleUtils;
+import com.meetkiki.blog.validators.CommonValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import static com.meetkiki.blog.bootstrap.TaleConst.OPTION_ALLOW_INSTALL;
 
 
 @Slf4j
@@ -33,8 +43,8 @@ public class InstallController extends BaseController {
         return "install";
     }
 
-    @PostRoute
-    @JSON
+    @PostMapping
+    @ResponseBody
     public RestResponse<?> doInstall(InstallParam installParam) {
         if (isRepeatInstall()) {
             return RestResponse.fail("请勿重复安装");

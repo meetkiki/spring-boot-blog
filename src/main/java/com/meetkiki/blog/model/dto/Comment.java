@@ -1,6 +1,6 @@
 package com.meetkiki.blog.model.dto;
 
-import com.tale.model.entity.Comments;
+import com.meetkiki.blog.model.entity.Comments;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
