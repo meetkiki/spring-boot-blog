@@ -1,9 +1,10 @@
 package com.meetkiki.blog.controller.admin;
 
 import com.meetkiki.blog.annotation.SysLog;
-import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.constants.TaleConst;
 import com.meetkiki.blog.controller.BaseController;
 import com.meetkiki.blog.exception.ValidatorException;
+import com.meetkiki.blog.model.dto.RestResponse;
 import com.meetkiki.blog.model.entity.Users;
 import com.meetkiki.blog.model.params.LoginParam;
 import com.meetkiki.blog.utils.DateUtils;
@@ -13,9 +14,14 @@ import com.meetkiki.blog.utils.TaleUtils;
 import com.meetkiki.blog.validators.CommonValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.meetkiki.blog.bootstrap.TaleConst.LOGIN_ERROR_COUNT;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import static com.meetkiki.blog.constants.TaleConst.LOGIN_ERROR_COUNT;
 import static io.github.biezhi.anima.Anima.select;
 
 /**
@@ -24,12 +30,13 @@ import static io.github.biezhi.anima.Anima.select;
  * Created by biezhi on 2017/2/21.
  */
 @Slf4j
-@RestController(value = "admin")
+@RestController
+@RequestMapping("admin")
 public class AuthController extends BaseController {
 
     @SysLog("登录后台")
     @PostMapping("login")
-    public RestResponse<?> doLogin(LoginParam loginParam, RouteContext context) {
+    public RestResponse<?> doLogin(LoginParam loginParam, HttpServletRequest request, HttpServletResponse response) {
 
         CommonValidator.valid(loginParam);
 
@@ -55,10 +62,11 @@ public class AuthController extends BaseController {
                 errorCount += 1;
                 return RestResponse.fail("用户名或密码错误");
             }
-            context.session().attribute(TaleConst.LOGIN_SESSION_KEY, user);
+            HttpSession session = request.getSession();
+            session.setAttribute(TaleConst.LOGIN_SESSION_KEY, user);
 
             if (StringUtils.isNotBlank(loginParam.getRememberMe())) {
-                TaleUtils.setCookie(context, user.getUid());
+                TaleUtils.setCookie(request,response, user.getUid());
             }
 
             Users temp = new Users();

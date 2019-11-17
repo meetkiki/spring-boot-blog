@@ -1,6 +1,6 @@
 package com.meetkiki.blog.utils;
 
-import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.constants.TaleConst;
 import com.meetkiki.blog.extension.Commons;
 import com.meetkiki.blog.extension.Theme;
 import com.meetkiki.blog.model.dto.RememberMe;
@@ -20,11 +20,20 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.AttributeProvider;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.awt.*;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -34,7 +43,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.meetkiki.blog.bootstrap.TaleConst.*;
+import static com.meetkiki.blog.constants.TaleConst.*;
 import static io.github.biezhi.anima.Anima.select;
 import static io.github.biezhi.anima.Anima.update;
 
@@ -61,42 +70,53 @@ public class TaleUtils {
     /**
      * 设置记住密码 cookie
      */
-    public static void setCookie(RouteContext context, Integer uid) {
+    public static void setCookie(HttpServletRequest request, HttpServletResponse response, Integer uid) {
         boolean isSSL = Commons.site_url().startsWith("https");
 
         String     token      = EncryptUtils.md5(UUID.UU64());
         RememberMe rememberMe = new RememberMe();
         rememberMe.setUid(uid);
         rememberMe.setExpires(DateUtils.nowUnix() + ONE_MONTH);
-        rememberMe.setRecentIp(Collections.singletonList(context.address()));
+        rememberMe.setRecentIp(Collections.singletonList(IpUtil.getIpAddr(request)));
         rememberMe.setToken(token);
 
         long count = select().from(Options.class).where(Options::getName, OPTION_SAFE_REMEMBER_ME).count();
         if (count == 0) {
             Options options = new Options();
             options.setName(OPTION_SAFE_REMEMBER_ME);
-            options.setValue(JsonKit.toString(rememberMe));
+            options.setValue(JsonUtils.toString(rememberMe));
             options.setDescription("记住我 Token");
             options.save();
         } else {
-            update().from(Options.class).set(Options::getValue, JsonKit.toString(rememberMe))
+            update().from(Options.class).set(Options::getValue, JsonUtils.toString(rememberMe))
                     .where(Options::getName, OPTION_SAFE_REMEMBER_ME)
                     .execute();
         }
 
-        Cookie cookie = new Cookie();
-        cookie.name(REMEMBER_IN_COOKIE);
-        cookie.value(token);
-        cookie.httpOnly(true);
-        cookie.secure(isSSL);
-        cookie.maxAge(ONE_MONTH);
-        cookie.path("/");
-
-        context.response().cookie(cookie);
+        Cookie cookie = new Cookie(REMEMBER_IN_COOKIE,token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(isSSL);
+        cookie.setMaxAge(ONE_MONTH);
+        cookie.setPath("/");
+        response.addCookie(cookie);
     }
 
-    public static Integer getCookieUid(RouteContext context) {
-        String rememberToken = context.cookie(REMEMBER_IN_COOKIE);
+    public static Cookie getCookie(HttpServletRequest request,String cookieName){
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().endsWith(REMEMBER_IN_COOKIE)){
+                return cookie;
+            }
+        }
+        return null;
+    }
+
+    public static Integer getCookieUid(HttpServletRequest request) {
+        Cookie cookie = getCookie(request, REMEMBER_IN_COOKIE);
+        if (cookie == null){
+            return null;
+        }
+        String rememberToken = cookie.getValue();
         if (null == rememberToken || rememberToken.isEmpty() || REMEMBER_TOKEN.isEmpty()) {
             return null;
         }
@@ -107,37 +127,56 @@ public class TaleUtils {
         if (null == options) {
             return null;
         }
-        RememberMe rememberMe = JsonKit.formJson(options.getValue(), RememberMe.class);
+        RememberMe rememberMe = JsonUtils.formJson(options.getValue(), RememberMe.class);
         if (rememberMe.getExpires() < DateUtils.nowUnix()) {
             return null;
         }
-        if (!rememberMe.getRecentIp().contains(context.address())) {
+        if (!rememberMe.getRecentIp().contains(IpUtil.getIpAddr(request))) {
             return null;
         }
         return rememberMe.getUid();
+    }
+
+    public static String bodyToString(HttpServletRequest request){
+        StringBuilder stringBuilder = new StringBuilder();
+        BufferedReader bufferedReader = null;
+        try (
+                InputStream inputStream = request.getInputStream();
+        ){
+            if (inputStream != null ) {
+                inputStream.reset();
+                bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                char[] charBuffer = new char[128];
+                int bytesRead = -1;
+                while ((bytesRead = bufferedReader.read(charBuffer)) > 0) {
+                    stringBuilder.append(charBuffer, 0, bytesRead);
+                }
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return stringBuilder.toString();
     }
 
     /**
      * 返回当前登录用户
      */
     public static Users getLoginUser() {
-        Session session = com.blade.mvc.WebContext.request().session();
+        HttpSession session = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getSession();
         if (null == session) {
             return null;
         }
-        Users user = session.attribute(TaleConst.LOGIN_SESSION_KEY);
-        return user;
+        return (Users) session.getAttribute(TaleConst.LOGIN_SESSION_KEY);
     }
 
-    /**
-     * 退出登录状态
-     */
-    public static void logout(RouteContext context) {
-        TaleConst.REMEMBER_TOKEN = "";
-        context.session().remove(TaleConst.LOGIN_SESSION_KEY);
-        context.response().removeCookie(TaleConst.REMEMBER_IN_COOKIE);
-        context.redirect(Commons.site_url());
-    }
 
     /**
      * markdown转换为html
@@ -158,11 +197,11 @@ public class TaleUtils {
         content = Commons.emoji(content);
 
         // 支持网易云音乐输出
-        if (TaleConst.BCONF.getBoolean(ENV_SUPPORT_163_MUSIC, true) && content.contains(MP3_PREFIX)) {
+        if (Boolean.parseBoolean(OPTIONS.getOrDefault(ENV_SUPPORT_163_MUSIC, "true")) && content.contains(MP3_PREFIX)) {
             content = content.replaceAll(MUSIC_REG_PATTERN, MUSIC_IFRAME);
         }
         // 支持gist代码输出
-        if (TaleConst.BCONF.getBoolean(ENV_SUPPORT_GIST, true) && content.contains(GIST_PREFIX_URL)) {
+        if (Boolean.parseBoolean(OPTIONS.getOrDefault(ENV_SUPPORT_GIST, "true")) && content.contains(GIST_PREFIX_URL)) {
             content = content.replaceAll(GIST_REG_PATTERN, GIST_REPLATE_PATTERN);
         }
         return content;
@@ -235,9 +274,9 @@ public class TaleUtils {
      */
     public static String getRssXml(List<Contents> articles) throws FeedException {
         Channel channel = new Channel("rss_2.0");
-        channel.setTitle(TaleConst.OPTIONS.get("site_title", ""));
+        channel.setTitle(TaleConst.OPTIONS.getOrDefault("site_title", ""));
         channel.setLink(Commons.site_url());
-        channel.setDescription(TaleConst.OPTIONS.get("site_description", ""));
+        channel.setDescription(TaleConst.OPTIONS.getOrDefault("site_description", ""));
         channel.setLanguage("zh-CN");
         List<Item> items = new ArrayList<>();
         articles.forEach(post -> {

@@ -17,7 +17,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.meetkiki.blog.bootstrap.TaleConst.COMMENT_APPROVED;
+import static com.meetkiki.blog.constants.TaleConst.COMMENT_APPROVED;
 import static io.github.biezhi.anima.Anima.select;
 import static io.github.biezhi.anima.Anima.update;
 

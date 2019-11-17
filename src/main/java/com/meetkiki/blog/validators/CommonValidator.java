@@ -8,8 +8,8 @@ import com.meetkiki.blog.model.params.LoginParam;
 import com.meetkiki.blog.utils.TaleUtils;
 import org.springframework.util.StringUtils;
 
-import static com.meetkiki.blog.bootstrap.TaleConst.MAX_TEXT_COUNT;
-import static com.meetkiki.blog.bootstrap.TaleConst.MAX_TITLE_COUNT;
+import static com.meetkiki.blog.constants.TaleConst.MAX_TEXT_COUNT;
+import static com.meetkiki.blog.constants.TaleConst.MAX_TITLE_COUNT;
 import static io.github.biezhi.anima.Anima.select;
 
 /**

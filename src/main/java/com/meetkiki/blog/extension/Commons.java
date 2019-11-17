@@ -1,6 +1,6 @@
 package com.meetkiki.blog.extension;
 
-import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.constants.TaleConst;
 import com.meetkiki.blog.controller.BaseController;
 import com.meetkiki.blog.service.SiteService;
 import com.meetkiki.blog.utils.DateUtils;
@@ -9,9 +9,12 @@ import com.meetkiki.blog.utils.TaleUtils;
 import com.meetkiki.blog.utils.UUID;
 import com.vdurmont.emoji.EmojiParser;
 import io.github.biezhi.anima.page.Page;
+import jetbrick.template.JetAnnotations;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,9 +24,10 @@ import java.util.regex.Pattern;
  * <p>
  * Created by biezhi on 2017/2/21.
  */
-public final class Commons {
+@JetAnnotations.Functions
+public class Commons {
 
-    private static final String TEMPLATES = "/templates/";
+    //private static final String TEMPLATES = "/templates/";
 
     public static void setSiteService(SiteService ss) {
         Theme.setSiteService(ss);
@@ -125,7 +129,7 @@ public final class Commons {
         if (!StringUtils.hasText(key)) {
             return "";
         }
-        return TaleConst.OPTIONS.get(key, defalutValue);
+        return TaleConst.OPTIONS.getOrDefault(key, defalutValue);
     }
 
     /**
@@ -157,7 +161,7 @@ public final class Commons {
      * @return
      */
     public static String theme_url() {
-        return Commons.site_url(TEMPLATES + BaseController.THEME);
+        return Commons.site_url(File.separatorChar + BaseController.THEME);
     }
 
     /**
@@ -167,7 +171,7 @@ public final class Commons {
      * @return
      */
     public static String theme_url(String sub) {
-        return Commons.site_url(TEMPLATES + BaseController.THEME + sub);
+        return Commons.site_url(File.separatorChar + BaseController.THEME + sub);
     }
 
 

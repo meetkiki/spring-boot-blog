@@ -1,8 +1,9 @@
 package com.meetkiki.blog.controller.admin;
 
 import com.meetkiki.blog.annotation.SysLog;
-import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.constants.TaleConst;
 import com.meetkiki.blog.controller.BaseController;
+import com.meetkiki.blog.model.dto.RestResponse;
 import com.meetkiki.blog.model.entity.Users;
 import com.meetkiki.blog.service.OptionsService;
 import com.meetkiki.blog.service.SiteService;
@@ -11,6 +12,8 @@ import com.meetkiki.blog.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 
@@ -19,7 +22,8 @@ import javax.annotation.Resource;
  * Created by biezhi on 2017/2/21.
  */
 @Slf4j
-@Controller(value = "admin")
+@Controller
+@RequestMapping("admin")
 public class SystemController extends BaseController {
 
     @Resource
@@ -30,7 +34,7 @@ public class SystemController extends BaseController {
 
     @SysLog("保存个人信息")
     @PostMapping("profile")
-    public RestResponse saveProfile(@Param String screenName, @Param String email) {
+    public RestResponse saveProfile(@RequestParam String screenName, @RequestParam String email) {
         Users users = this.user();
         if (StringUtils.isNotBlank(screenName) && StringUtils.isNotBlank(email)) {
             Users temp = new Users();
@@ -43,7 +47,7 @@ public class SystemController extends BaseController {
 
     @SysLog("修改登录密码")
     @PostMapping("password")
-    public RestResponse upPwd(@Param String old_password, @Param String password) {
+    public RestResponse upPwd(@RequestParam String old_password, @RequestParam String password) {
         Users users = this.user();
         if (StringUtils.isBlank(old_password) || StringUtils.isBlank(password)) {
             return RestResponse.fail("请确认信息输入完整");

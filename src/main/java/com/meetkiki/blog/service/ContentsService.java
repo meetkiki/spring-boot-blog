@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import static com.meetkiki.blog.bootstrap.TaleConst.SQL_QUERY_ARTICLES;
+import static com.meetkiki.blog.constants.TaleConst.SQL_QUERY_ARTICLES;
 import static io.github.biezhi.anima.Anima.deleteById;
 import static io.github.biezhi.anima.Anima.select;
 

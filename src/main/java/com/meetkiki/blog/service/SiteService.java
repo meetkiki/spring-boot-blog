@@ -1,7 +1,7 @@
 package com.meetkiki.blog.service;
 
 import com.meetkiki.blog.bootstrap.SqliteJdbc;
-import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.constants.TaleConst;
 import com.meetkiki.blog.exception.ValidatorException;
 import com.meetkiki.blog.model.dto.Archive;
 import com.meetkiki.blog.model.dto.BackResponse;
@@ -31,7 +31,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.meetkiki.blog.bootstrap.TaleConst.COMMENT_APPROVED;
+import static com.meetkiki.blog.constants.TaleConst.CLASSPATH;
+import static com.meetkiki.blog.constants.TaleConst.COMMENT_APPROVED;
 import static io.github.biezhi.anima.Anima.select;
 
 
@@ -171,7 +172,7 @@ public class SiteService {
                            .map(this::parseArchive)
                            .collect(Collectors.toList());
         }
-        return new ArrayList<>(0);
+        return Collections.emptyList();
     }
 
     private Archive parseArchive(Archive archive) {

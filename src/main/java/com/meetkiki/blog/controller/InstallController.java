@@ -1,7 +1,8 @@
 package com.meetkiki.blog.controller;
 
 
-import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.constants.TaleConst;
+import com.meetkiki.blog.model.dto.RestResponse;
 import com.meetkiki.blog.model.entity.Users;
 import com.meetkiki.blog.model.params.InstallParam;
 import com.meetkiki.blog.service.OptionsService;
@@ -9,22 +10,23 @@ import com.meetkiki.blog.service.SiteService;
 import com.meetkiki.blog.utils.TaleUtils;
 import com.meetkiki.blog.validators.CommonValidator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static com.meetkiki.blog.bootstrap.TaleConst.OPTION_ALLOW_INSTALL;
+import static com.meetkiki.blog.constants.TaleConst.CLASSPATH;
+import static com.meetkiki.blog.constants.TaleConst.OPTION_ALLOW_INSTALL;
 
 
 @Slf4j
-@RestController("install")
-public class InstallController extends BaseController {
+@Controller
+public class InstallController extends BaseController{
 
     @Resource
     private SiteService siteService;
@@ -35,15 +37,15 @@ public class InstallController extends BaseController {
     /**
      * 安装页
      */
-    @GetMapping
+    @GetMapping("install")
     public String index(HttpServletRequest request) {
         boolean existInstall   = Files.exists(Paths.get(CLASSPATH + "install.lock"));
-        boolean allowReinstall = TaleConst.OPTIONS.getBoolean(OPTION_ALLOW_INSTALL, false);
+        boolean allowReinstall = Boolean.parseBoolean(TaleConst.OPTIONS.getOrDefault(OPTION_ALLOW_INSTALL, "false"));
         request.setAttribute("is_install", !allowReinstall && existInstall);
         return "install";
     }
 
-    @PostMapping
+    @PostMapping("install")
     @ResponseBody
     public RestResponse<?> doInstall(InstallParam installParam) {
         if (isRepeatInstall()) {
@@ -63,14 +65,14 @@ public class InstallController extends BaseController {
         optionsService.saveOption("site_title", installParam.getSiteTitle());
         optionsService.saveOption("site_url", siteUrl);
 
-        TaleConst.OPTIONS = Environment.of(optionsService.getOptions());
+        TaleConst.OPTIONS = optionsService.getOptions();
 
         return RestResponse.ok();
     }
 
     private boolean isRepeatInstall() {
         return Files.exists(Paths.get(CLASSPATH + "install.lock"))
-                && TaleConst.OPTIONS.getInt("allow_install", 0) != 1;
+                && Integer.parseInt(TaleConst.OPTIONS.getOrDefault("allow_install", "0")) != 1;
     }
 
 }

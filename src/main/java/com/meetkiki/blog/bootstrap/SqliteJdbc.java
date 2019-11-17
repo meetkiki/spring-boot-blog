@@ -13,6 +13,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.stream.Collectors;
 
+import static com.meetkiki.blog.constants.TaleConst.CLASSPATH;
+
 /**
  * SQLite 数据库操作
  * <p>
@@ -40,7 +42,7 @@ public final class SqliteJdbc {
     public static void importSql(boolean devMode) {
         try {
 
-            DB_PATH = Const.CLASSPATH + File.separatorChar + DB_NAME;
+            DB_PATH = CLASSPATH + File.separatorChar + DB_NAME;
             DB_SRC = "jdbc:sqlite://" + DB_PATH;
 
             if (devMode) {

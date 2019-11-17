@@ -1,6 +1,5 @@
 package com.meetkiki.blog.model.entity;
 
-import com.blade.kit.DateKit;
 import com.meetkiki.blog.utils.DateUtils;
 import io.github.biezhi.anima.Model;
 import io.github.biezhi.anima.annotation.Table;
@@ -48,6 +47,10 @@ public class Logs extends Model {
      * 日志创建时间
      */
     private Integer created;
+    /**
+     * 响应参数
+     */
+    private String result;
 
     public Logs(String action, String data, String ip, Integer uid) {
         this.action = action;

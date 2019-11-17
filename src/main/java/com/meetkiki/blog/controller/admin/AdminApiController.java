@@ -1,9 +1,11 @@
 package com.meetkiki.blog.controller.admin;
 
 import com.meetkiki.blog.annotation.SysLog;
-import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.bootstrap.TaleLoader;
+import com.meetkiki.blog.constants.TaleConst;
 import com.meetkiki.blog.controller.BaseController;
 import com.meetkiki.blog.extension.Commons;
+import com.meetkiki.blog.model.dto.RestResponse;
 import com.meetkiki.blog.model.dto.ThemeDto;
 import com.meetkiki.blog.model.dto.Types;
 import com.meetkiki.blog.model.entity.Attach;
@@ -11,6 +13,7 @@ import com.meetkiki.blog.model.entity.Comments;
 import com.meetkiki.blog.model.entity.Contents;
 import com.meetkiki.blog.model.entity.Logs;
 import com.meetkiki.blog.model.entity.Metas;
+import com.meetkiki.blog.model.entity.Options;
 import com.meetkiki.blog.model.entity.Users;
 import com.meetkiki.blog.model.params.AdvanceParam;
 import com.meetkiki.blog.model.params.ArticleParam;
@@ -18,7 +21,10 @@ import com.meetkiki.blog.model.params.CommentParam;
 import com.meetkiki.blog.model.params.MetaParam;
 import com.meetkiki.blog.model.params.PageParam;
 import com.meetkiki.blog.model.params.TemplateParam;
+import com.meetkiki.blog.model.params.ThemeParam;
 import com.meetkiki.blog.service.*;
+import com.meetkiki.blog.utils.IpUtil;
+import com.meetkiki.blog.utils.JsonUtils;
 import com.meetkiki.blog.utils.StringUtils;
 import com.meetkiki.blog.validators.CommonValidator;
 import io.github.biezhi.anima.Anima;
@@ -27,22 +33,30 @@ import io.github.biezhi.anima.page.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.websocket.server.PathParam;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static com.meetkiki.blog.bootstrap.TaleConst.CLASSPATH;
-import static com.meetkiki.blog.bootstrap.TaleConst.OPTION_ALLOW_CLOUD_CDN;
-import static com.meetkiki.blog.bootstrap.TaleConst.OPTION_ALLOW_COMMENT_AUDIT;
-import static com.meetkiki.blog.bootstrap.TaleConst.OPTION_ALLOW_INSTALL;
-import static com.meetkiki.blog.bootstrap.TaleConst.OPTION_CDN_URL;
+import static com.meetkiki.blog.constants.TaleConst.CLASSPATH;
+import static com.meetkiki.blog.constants.TaleConst.OPTION_ALLOW_CLOUD_CDN;
+import static com.meetkiki.blog.constants.TaleConst.OPTION_ALLOW_COMMENT_AUDIT;
+import static com.meetkiki.blog.constants.TaleConst.OPTION_ALLOW_INSTALL;
+import static com.meetkiki.blog.constants.TaleConst.OPTION_CDN_URL;
+import static com.meetkiki.blog.constants.TaleConst.OPTION_SITE_THEME;
+import static io.github.biezhi.anima.Anima.delete;
 import static io.github.biezhi.anima.Anima.select;
 
 /**
@@ -50,7 +64,8 @@ import static io.github.biezhi.anima.Anima.select;
  * @date 2018/6/9
  */
 @Slf4j
-@RestController(value = "admin/api")
+@RestController
+@RequestMapping("admin/api")
 public class AdminApiController extends BaseController {
 
     @Autowired
@@ -69,43 +84,37 @@ public class AdminApiController extends BaseController {
     private SiteService siteService;
 
     @GetMapping("logs")
-    public RestResponse sysLogs(PageParam pageParam) {
-        return RestResponse.ok(select().from(Logs.class).order(Logs::getId, OrderBy.DESC).page(pageParam.getPage(), pageParam.getLimit()));
+    public RestResponse sysLogs(@RequestParam(value = "page", required = false,defaultValue = "1") Integer page,
+                                @RequestParam(value = "limit", required = false,defaultValue = "12") Integer limit) {
+        return RestResponse.ok(select().from(Logs.class).order(Logs::getId, OrderBy.DESC).page(page, limit));
     }
 
     @SysLog("删除页面")
-    @PostMapping("page/delete/:cid")
-    public RestResponse<?> deletePage(@PathParam Integer cid) {
+    @PostMapping("/page/delete/{cid}")
+    public RestResponse<?> deletePage(@PathVariable Integer cid) {
         contentsService.delete(cid);
         siteService.cleanCache(Types.SYS_STATISTICS);
         return RestResponse.ok();
     }
 
-    @GetMapping("articles/:cid")
-    public RestResponse article(@PathParam String cid) {
+    @GetMapping("/articles/{cid}")
+    public RestResponse article(@PathVariable String cid) {
         Contents contents = contentsService.getContents(cid);
         contents.setContent("");
         return RestResponse.ok(contents);
     }
 
-    @GetMapping("articles/content/:cid")
-    public void articleContent(@PathParam String cid, Response response) {
+    @GetMapping("articles/content/{cid}")
+    public void articleContent(@PathVariable String cid, HttpServletResponse response) throws IOException {
         Contents contents = contentsService.getContents(cid);
-        response.text(contents.getContent());
+        response.setContentType("text/html;charset=utf-8");
+        PrintWriter writer = response.getWriter();
+        writer.println(contents.getContent());
     }
 
     @PostMapping("article/new")
-    public RestResponse newArticle(@BodyParam Contents contents) {
+    public RestResponse newArticle(@RequestBody Contents contents) {
         CommonValidator.valid(contents);
-
-        // FIXME 将前端的编码转换，希望以后有时间可以找到更优雅的方式
-        try {
-            contents.markdownTransfer();
-        } catch (UnsupportedEncodingException e) {
-            log.error("解码失败:{}", contents.getContent());
-            e.printStackTrace();
-            return RestResponse.fail("解码失败");
-        }
 
         Users users = this.user();
         contents.setType(Types.ARTICLE);
@@ -114,7 +123,7 @@ public class AdminApiController extends BaseController {
         contents.setHits(0);
         //将评论数设初始化为0
         contents.setCommentsNum(0);
-        if (StringKit.isBlank(contents.getCategories())) {
+        if (StringUtils.isBlank(contents.getCategories())) {
             contents.setCategories("默认分类");
         }
         Integer cid = contentsService.publish(contents);
@@ -122,28 +131,19 @@ public class AdminApiController extends BaseController {
         return RestResponse.ok(cid);
     }
 
-    @PostMapping("article/delete/:cid")
-    public RestResponse<?> deleteArticle(@PathParam Integer cid) {
+    @PostMapping("article/delete/{cid}")
+    public RestResponse<?> deleteArticle(@PathVariable Integer cid) {
         contentsService.delete(cid);
         siteService.cleanCache(Types.SYS_STATISTICS);
         return RestResponse.ok();
     }
 
     @PostMapping("article/update")
-    public RestResponse updateArticle(@BodyParam Contents contents) {
+    public RestResponse updateArticle(@RequestBody Contents contents) {
         if (null == contents || null == contents.getCid()) {
             return RestResponse.fail("缺少参数，请重试");
         }
         CommonValidator.valid(contents);
-
-        // FIXME 将前端的编码转换，希望以后有时间可以找到更优雅的方式
-        try {
-            contents.markdownTransfer();
-        } catch (UnsupportedEncodingException e) {
-            log.error("解码失败:{}", contents.getContent());
-            e.printStackTrace();
-            return RestResponse.fail("解码失败");
-        }
 
         Integer cid = contents.getCid();
         contentsService.updateArticle(contents);
@@ -168,7 +168,7 @@ public class AdminApiController extends BaseController {
 
     @SysLog("发布页面")
     @PostMapping("page/new")
-    public RestResponse<?> newPage(@BodyParam Contents contents) {
+    public RestResponse<?> newPage(@RequestBody Contents contents) {
 
         CommonValidator.valid(contents);
 
@@ -183,7 +183,7 @@ public class AdminApiController extends BaseController {
 
     @SysLog("修改页面")
     @PostMapping("page/update")
-    public RestResponse<?> updatePage(@BodyParam Contents contents) {
+    public RestResponse<?> updatePage(@RequestBody Contents contents) {
         CommonValidator.valid(contents);
 
         if (null == contents.getCid()) {
@@ -197,15 +197,15 @@ public class AdminApiController extends BaseController {
 
     @SysLog("保存分类")
     @PostMapping("category/save")
-    public RestResponse<?> saveCategory(@BodyParam MetaParam metaParam) {
+    public RestResponse<?> saveCategory(@RequestBody MetaParam metaParam) {
         metasService.saveMeta(Types.CATEGORY, metaParam.getCname(), metaParam.getMid());
         siteService.cleanCache(Types.SYS_STATISTICS);
         return RestResponse.ok();
     }
 
     @SysLog("删除分类/标签")
-    @PostMapping("category/delete/:mid")
-    public RestResponse<?> deleteMeta(@PathParam Integer mid) {
+    @PostMapping("category/delete/{mid}")
+    public RestResponse<?> deleteMeta(@PathVariable Integer mid) {
         metasService.delete(mid);
         siteService.cleanCache(Types.SYS_STATISTICS);
         return RestResponse.ok();
@@ -221,8 +221,8 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("删除评论")
-    @PostMapping("comment/delete/:coid")
-    public RestResponse<?> deleteComment(@PathParam Integer coid) {
+    @PostMapping("comment/delete/{coid}")
+    public RestResponse<?> deleteComment(@PathVariable Integer coid) {
         Comments comments = select().from(Comments.class).byId(coid);
         if (null == comments) {
             return RestResponse.fail("不存在该评论");
@@ -234,7 +234,7 @@ public class AdminApiController extends BaseController {
 
     @SysLog("修改评论状态")
     @PostMapping("comment/status")
-    public RestResponse<?> updateStatus(@BodyParam Comments comments) {
+    public RestResponse<?> updateStatus(@RequestBody Comments comments) {
         comments.update();
         siteService.cleanCache(Types.SYS_STATISTICS);
         return RestResponse.ok();
@@ -242,7 +242,7 @@ public class AdminApiController extends BaseController {
 
     @SysLog("回复评论")
     @PostMapping("comment/reply")
-    public RestResponse<?> replyComment(@BodyParam Comments comments, Request request) {
+    public RestResponse<?> replyComment(@RequestBody Comments comments, HttpServletRequest request) {
         CommonValidator.validAdmin(comments);
 
         Comments c = select().from(Comments.class).byId(comments.getCoid());
@@ -253,7 +253,7 @@ public class AdminApiController extends BaseController {
         comments.setAuthor(users.getUsername());
         comments.setAuthorId(users.getUid());
         comments.setCid(c.getCid());
-        comments.setIp(request.address());
+        comments.setIp(IpUtil.getIpAddr(request));
         comments.setUrl(users.getHomeUrl());
 
         if (StringUtils.isNotBlank(users.getEmail())) {
@@ -279,8 +279,8 @@ public class AdminApiController extends BaseController {
     }
 
     @SysLog("删除附件")
-    @PostMapping("attach/delete/:id")
-    public RestResponse<?> deleteAttach(@PathParam Integer id) throws IOException {
+    @PostMapping("attach/delete/{id}")
+    public RestResponse<?> deleteAttach(@PathVariable Integer id) throws IOException {
         Attach attach = select().from(Attach.class).byId(id);
         if (null == attach) {
             return RestResponse.fail("不存在该附件");
@@ -317,11 +317,10 @@ public class AdminApiController extends BaseController {
 
     @SysLog("保存系统配置")
     @PostMapping("options/save")
-    public RestResponse<?> saveOptions(Request request) {
-        Map<String, List<String>> querys = request.parameters();
-        querys.forEach((k, v) -> optionsService.saveOption(k, v.get(0)));
-        Environment config = Environment.of(optionsService.getOptions());
-        TaleConst.OPTIONS = config;
+    public RestResponse<?> saveOptions(HttpServletRequest request) {
+        Map<String, String[]> querys = request.getParameterMap();
+        querys.forEach((k, v) -> optionsService.saveOption(k, v[0]));
+        TaleConst.OPTIONS = optionsService.getOptions();
         return RestResponse.ok();
     }
 
@@ -358,25 +357,25 @@ public class AdminApiController extends BaseController {
 
         if (StringUtils.isNotBlank(advanceParam.getCdnURL())) {
             optionsService.saveOption(OPTION_CDN_URL, advanceParam.getCdnURL());
-            TaleConst.OPTIONS.set(OPTION_CDN_URL, advanceParam.getCdnURL());
+            TaleConst.OPTIONS.put(OPTION_CDN_URL, advanceParam.getCdnURL());
         }
 
         // 是否允许重新安装
         if (StringUtils.isNotBlank(advanceParam.getAllowInstall())) {
             optionsService.saveOption(OPTION_ALLOW_INSTALL, advanceParam.getAllowInstall());
-            TaleConst.OPTIONS.set(OPTION_ALLOW_INSTALL, advanceParam.getAllowInstall());
+            TaleConst.OPTIONS.put(OPTION_ALLOW_INSTALL, advanceParam.getAllowInstall());
         }
 
         // 评论是否需要审核
         if (StringUtils.isNotBlank(advanceParam.getAllowCommentAudit())) {
             optionsService.saveOption(OPTION_ALLOW_COMMENT_AUDIT, advanceParam.getAllowCommentAudit());
-            TaleConst.OPTIONS.set(OPTION_ALLOW_COMMENT_AUDIT, advanceParam.getAllowCommentAudit());
+            TaleConst.OPTIONS.put(OPTION_ALLOW_COMMENT_AUDIT, advanceParam.getAllowCommentAudit());
         }
 
         // 是否允许公共资源CDN
         if (StringUtils.isNotBlank(advanceParam.getAllowCloudCDN())) {
             optionsService.saveOption(OPTION_ALLOW_CLOUD_CDN, advanceParam.getAllowCloudCDN());
-            TaleConst.OPTIONS.set(OPTION_ALLOW_CLOUD_CDN, advanceParam.getAllowCloudCDN());
+            TaleConst.OPTIONS.put(OPTION_ALLOW_CLOUD_CDN, advanceParam.getAllowCloudCDN());
         }
         return RestResponse.ok();
     }
@@ -394,10 +393,6 @@ public class AdminApiController extends BaseController {
                     themeDto.setHasSetting(true);
                 }
                 themes.add(themeDto);
-                try {
-                    WebContext.blade().addStatics("/templates/themes/" + f.getName() + "/screenshot.png");
-                } catch (Exception e) {
-                }
             }
         }
         return RestResponse.ok(themes);
@@ -405,47 +400,42 @@ public class AdminApiController extends BaseController {
 
     @SysLog("保存主题设置")
     @PostMapping("themes/setting")
-    public RestResponse<?> saveSetting(Request request) {
-        Map<String, List<String>> query = request.parameters();
+    public RestResponse<?> saveSetting(HttpServletRequest request) {
+        Map<String, String[]> query = request.getParameterMap();
 
         // theme_milk_options => {  }
         String currentTheme = Commons.site_theme();
         String key          = "theme_" + currentTheme + "_options";
 
         Map<String, String> options = new HashMap<>();
-        query.forEach((k, v) -> options.put(k, v.get(0)));
+        query.forEach((k, v) -> options.put(k, v[0]));
 
-        optionsService.saveOption(key, JsonKit.toString(options));
+        optionsService.saveOption(key, JsonUtils.toString(options));
 
-        TaleConst.OPTIONS = Environment.of(optionsService.getOptions());
+        TaleConst.OPTIONS = optionsService.getOptions();
         return RestResponse.ok();
     }
 
     @SysLog("激活主题")
     @PostMapping("themes/active")
-    public RestResponse<?> activeTheme(@BodyParam ThemeParam themeParam) {
+    public RestResponse<?> activeTheme(@RequestBody ThemeParam themeParam) {
         optionsService.saveOption(OPTION_SITE_THEME, themeParam.getSiteTheme());
         delete().from(Options.class).where(Options::getName).like("theme_option_%").execute();
 
-        TaleConst.OPTIONS.set(OPTION_SITE_THEME, themeParam.getSiteTheme());
+        TaleConst.OPTIONS.put(OPTION_SITE_THEME, themeParam.getSiteTheme());
         BaseController.THEME = "themes/" + themeParam.getSiteTheme();
 
-        String themePath = "/templates/themes/" + themeParam.getSiteTheme();
-        try {
-            TaleLoader.loadTheme(themePath);
-        } catch (Exception e) {
-        }
         return RestResponse.ok();
     }
 
     @SysLog("保存模板")
     @PostMapping("template/save")
-    public RestResponse<?> saveTpl(@BodyParam TemplateParam templateParam) throws IOException {
+    public RestResponse<?> saveTpl(@RequestBody TemplateParam templateParam) throws IOException {
         if (StringUtils.isBlank(templateParam.getFileName())) {
             return RestResponse.fail("缺少参数，请重试");
         }
         String content   = templateParam.getContent();
-        String themePath = Const.CLASSPATH + File.separatorChar + "templates" + File.separatorChar + "themes" + File.separatorChar + Commons.site_theme();
+        String themePath = CLASSPATH + File.separatorChar + "templates" + File.separatorChar + "themes" + File.separatorChar + Commons.site_theme();
         String filePath  = themePath + File.separatorChar + templateParam.getFileName();
         if (Files.exists(Paths.get(filePath))) {
             byte[] rf_wiki_byte = content.getBytes("UTF-8");

@@ -3,6 +3,10 @@ package com.meetkiki.blog.controller;
 import com.meetkiki.blog.model.entity.Users;
 import com.meetkiki.blog.utils.MapCache;
 import com.meetkiki.blog.utils.TaleUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Created by biezhi on 2017/2/21.
@@ -17,13 +21,14 @@ public abstract class BaseController {
         return THEME + "/" + viewName;
     }
 
-    public BaseController title(Request request, String title) {
-        request.attribute("title", title);
+
+    public BaseController title(HttpServletRequest request, String title) {
+        request.setAttribute("title", title);
         return this;
     }
 
-    public BaseController keywords(Request request, String keywords) {
-        request.attribute("keywords", keywords);
+    public BaseController keywords(HttpServletRequest request, String keywords) {
+        request.setAttribute("keywords", keywords);
         return this;
     }
 

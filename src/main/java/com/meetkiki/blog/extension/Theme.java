@@ -1,6 +1,6 @@
 package com.meetkiki.blog.extension;
 
-import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.constants.TaleConst;
 import com.meetkiki.blog.model.dto.Comment;
 import com.meetkiki.blog.model.dto.Types;
 import com.meetkiki.blog.model.entity.Comments;
@@ -11,7 +11,13 @@ import com.meetkiki.blog.utils.StringUtils;
 import com.meetkiki.blog.utils.TaleUtils;
 import io.github.biezhi.anima.enums.OrderBy;
 import io.github.biezhi.anima.page.Page;
+import jetbrick.template.JetAnnotations;
+import jetbrick.template.runtime.InterpretContext;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -26,7 +32,8 @@ import static io.github.biezhi.anima.Anima.select;
  * <p>
  * Created by biezhi on 2017/2/28.
  */
-public final class Theme {
+@JetAnnotations.Functions
+public class Theme {
 
     private static SiteService siteService;
 
@@ -354,7 +361,7 @@ public final class Theme {
         int cid  = contents.getCid();
         int size = cid % 20;
         size = size == 0 ? 1 : size;
-        return "/templates/themes/default/static/img/rand/" + size + ".jpg";
+        return "/themes/default/static/img/rand/" + size + ".jpg";
     }
 
     /**
@@ -662,23 +669,23 @@ public final class Theme {
      * @return
      */
     public static Page<Contents> articles(int limit) {
-        Request request = WebContext.request();
-        Integer page    = request.attribute("page_num");
-        page = null == page ? request.queryInt("page", 1) : page;
-        page = page < 0 || page > TaleConst.MAX_PAGE ? 1 : page;
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        Integer pageNum    = (Integer) request.getAttribute("page_num");
+        pageNum = null == pageNum ? (Integer) request.getAttribute("page") : pageNum;
+        pageNum = pageNum < 0 || pageNum > TaleConst.MAX_PAGE ? 1 : pageNum;
 
         Page<Contents> articles = select().from(Contents.class)
                 .where(Contents::getType, Types.ARTICLE)
                 .and("status", Types.PUBLISH)
                 .order(Contents::getCreated, OrderBy.DESC)
-                .page(page, limit);
+                .page(pageNum, limit);
 
-        request.attribute("articles", articles);
-        if (page > 1) {
-            WebContext.request().attribute("title", "第" + page + "页");
+        request.setAttribute("articles", articles);
+        if (pageNum > 1) {
+            request.setAttribute("title", "第" + pageNum + "页");
         }
-        request.attribute("is_home", true);
-        request.attribute("page_prefix", "/page");
+        request.setAttribute("is_home", true);
+        request.setAttribute("page_prefix", "/page");
         return articles;
     }
 
@@ -733,53 +740,7 @@ public final class Theme {
      */
     public static String theme_option(String key) {
         String theme = Commons.site_theme();
-        return TaleConst.OPTIONS.get("theme_" + theme + "_options")
-                .filter(StringUtils::isNotBlank)
-                .map((String json) -> {
-                    Ason<?,?> ason = JsonKit.toAson(json);
-                    if (!ason.containsKey(key)) {
-                        return "";
-                    }
-                    return ason.getString(key);
-                })
-                .orElse("");
+        return TaleConst.OPTIONS.getOrDefault("theme_" + theme + "_options","");
     }
 
-    /**
-     * 返回是否是某个页面
-     *
-     * @param pageName
-     * @return
-     */
-    public static boolean is_slug(String pageName) {
-        Contents contents = current_article();
-        if (null != contents && Types.PAGE.equals(contents.getType()) && contents.getSlug().equals(pageName)) {
-            return true;
-        }
-        if (TaleConst.SLUG_HOME.equals(pageName)) {
-            Boolean isHome = WebContext.request().attribute("is_home");
-            if (null != isHome && isHome) {
-                return true;
-            }
-        }
-        if (TaleConst.SLUG_ARCHIVES.equals(pageName)) {
-            Boolean isArchives = WebContext.request().attribute("is_archive");
-            if (null != isArchives && isArchives) {
-                return true;
-            }
-        }
-        if (TaleConst.SLUG_CATEGRORIES.equals(pageName)) {
-            Boolean isCategory = WebContext.request().attribute("is_category");
-            if (null != isCategory && isCategory) {
-                return true;
-            }
-        }
-        if (TaleConst.SLUG_TAGS.equals(pageName)) {
-            Boolean isTag = WebContext.request().attribute("is_tag");
-            if (null != isTag && isTag) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

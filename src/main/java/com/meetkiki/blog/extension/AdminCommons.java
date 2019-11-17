@@ -1,14 +1,17 @@
 package com.meetkiki.blog.extension;
 
-import com.meetkiki.blog.bootstrap.TaleConst;
+import com.meetkiki.blog.constants.TaleConst;
 import com.meetkiki.blog.model.dto.Types;
+import jetbrick.template.JetAnnotations;
+import org.springframework.stereotype.Component;
 
 /**
  * 后台公共函数
  * <p>
  * Created by biezhi on 2017/2/21.
  */
-public final class AdminCommons {
+@JetAnnotations.Functions
+public class AdminCommons {
 
     public static String attachURL(){
         return Commons.site_option(Types.ATTACH_URL, Commons.site_url());
@@ -19,7 +22,7 @@ public final class AdminCommons {
     }
 
     public static String cdnURL(){
-        return Commons.site_option(Types.CDN_URL, "/static/admin");
+        return Commons.site_option(Types.CDN_URL, "");
     }
 
     public static String siteTheme() {

@@ -1,2 +1,31 @@
 server:
   port: 8080
+
+
+app:
+  name: tale
+  dev: true
+  version: v1.0
+  enableCdn: false
+  max:
+    file:
+      size: 20480
+  support_163_music: true
+  support_gist: true
+mvc:
+  view:
+    404: /comm/error_404.html
+    500: /comm/error_500.html
+  statis: /upload
+
+
+spring:
+# 静态文件请求匹配方式
+  mvc:
+    view:
+      static-path-pattern: /**
+#      prefix: /templates/
+
+# 修改默认的静态寻址资源目录
+  resources:
+    static-locations: classpath:/static/,classpath:/templates/

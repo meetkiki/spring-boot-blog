@@ -13,7 +13,7 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.meetkiki.blog.bootstrap.TaleConst.SQL_QUERY_METAS;
+import static com.meetkiki.blog.constants.TaleConst.SQL_QUERY_METAS;
 import static io.github.biezhi.anima.Anima.select;
 
 /**
