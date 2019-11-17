@@ -13,11 +13,15 @@ import com.meetkiki.blog.service.SiteService;
 import com.meetkiki.blog.utils.JsonUtils;
 import com.meetkiki.blog.validators.Validators;
 import io.github.biezhi.anima.Anima;
+import jetbrick.io.resource.ClasspathResource;
+import jetbrick.io.resource.Resource;
 import jetbrick.template.JetEngine;
 import jetbrick.template.JetGlobalContext;
 import jetbrick.template.JetTemplate;
+import jetbrick.template.loader.AbstractResourceLoader;
 import jetbrick.template.resolver.GlobalResolver;
 import jetbrick.template.web.springmvc.JetTemplateViewResolver;
+import jetbrick.util.PathUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -86,10 +90,11 @@ public class Bootstrap {
         // 模板输出编码格式
         config.put("jetx.output.encoding","utf-8");
         // 模板加载器
-        config.put("jetx.template.loaders","jetbrick.template.loader.ClasspathResourceLoader");
+        config.put("jetx.template.loaders",MyResourceLoader.class.getName());
         templateViewResolver.setContentType("text/html");
         return templateViewResolver;
     }
+
 
     @Bean("jetEngine")
     @ConditionalOnClass(JetTemplateViewResolver.class)
