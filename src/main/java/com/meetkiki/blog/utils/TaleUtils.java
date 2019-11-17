@@ -144,7 +144,6 @@ public class TaleUtils {
                 InputStream inputStream = request.getInputStream();
         ){
             if (inputStream != null ) {
-                inputStream.reset();
                 bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                 char[] charBuffer = new char[128];
                 int bytesRead = -1;
@@ -152,7 +151,7 @@ public class TaleUtils {
                     stringBuilder.append(charBuffer, 0, bytesRead);
                 }
             }
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
             if (bufferedReader != null) {
