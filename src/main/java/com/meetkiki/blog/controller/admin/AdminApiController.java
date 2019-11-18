@@ -274,7 +274,9 @@ public class AdminApiController extends BaseController {
         Page<Attach> attachPage = select().from(Attach.class)
                 .order(Attach::getCreated, OrderBy.DESC)
                 .page(pageParam.getPage(), pageParam.getLimit());
-
+        if (attachPage.getRows() == null){
+            attachPage.setRows(Collections.emptyList());
+        }
         return RestResponse.ok(attachPage);
     }
 

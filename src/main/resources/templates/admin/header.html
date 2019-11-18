@@ -7,7 +7,7 @@
     <meta content="biezhi" name="author"/>
     <meta content="${_csrf_token}" name="csrf_token"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <link rel="shortcut icon" href="/admin/images/favicon.png"/>
+    <link rel="shortcut icon" href="${cdnURL()}/images/favicon.png"/>
     #if(allow_cloud_CDN() == "true")
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -41,7 +41,7 @@
             <div class="text-center p-t-10" style="margin: 0 auto;">
                 <div class="pull-left" style="padding-left: 10px;">
                     <a href="/admin/index">
-                        <img src="/images/unicorn.png" width="50" height="50"/>
+                        <img src="${cdnURL()}/images/unicorn.png" width="50" height="50"/>
                     </a>
                 </div>
                 <div class="pull-left admin-title" style="padding-left: 10px;">
@@ -116,7 +116,7 @@
                     </li>
 
                     <li #if(active=='setting') class="active" #end>
-                        <a href="/admin" class="waves-effect #if(active=='setting') active #end"><i class="fa fa-gear" aria-hidden="true"></i><span> 系统设置 </span></a>
+                        <a href="/admin/setting" class="waves-effect #if(active=='setting') active #end"><i class="fa fa-gear" aria-hidden="true"></i><span> 系统设置 </span></a>
                     </li>
 
                     #for(item : plugin_menus)

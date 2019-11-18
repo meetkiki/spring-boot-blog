@@ -14,8 +14,8 @@ app:
   support_gist: true
 mvc:
   view:
-    404: /comm/error_404.html
-    500: /comm/error_500.html
+    404: /templates/comm/error_404.html
+    500: /templates/comm/error_500.html
   statis: /upload
 
 
@@ -24,8 +24,4 @@ spring:
   mvc:
     view:
       static-path-pattern: /**
-#      prefix: /templates/
 
-# 修改默认的静态寻址资源目录
-  resources:
-    static-locations: classpath:/static/,classpath:/templates/

@@ -80,7 +80,7 @@ public class IndexController extends BaseController {
      * @param keyword
      * @return
      */
-    @GetMapping(value = {"search/:keyword", "search/{keyword}.html"})
+    @GetMapping(value = {"search/{keyword}", "search/{keyword}.html"})
     public String search(HttpServletRequest request, @PathVariable String keyword, @RequestParam(defaultValue = "12") int limit) {
         return this.search(request, keyword, 1, limit);
     }

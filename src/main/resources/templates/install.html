@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta content="${_csrf_token}" name="csrf_token"/>
-    <link rel="shortcut icon" href="/images/favicon.png"/>
+    <link rel="shortcut icon" href="${cdnURL()}/images/favicon.png"/>
     <title>Tale - 博客安装</title>
     <link href="${cdnURL()}/plugins/jquery-steps/1.1.0/jquery.steps.css" rel="stylesheet" >
     <link href="${cdnURL()}/plugins/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
@@ -13,7 +13,7 @@
     <link href="${cdnURL()}/css/style.min.css" rel="stylesheet" >
     <style>
         body,html {
-            background: url("/images/bg/${random(5, '.png')}") no-repeat;
+            background: url("${cdnURL()}/images/bg/${random(5, '.png')}") no-repeat;
             background-size: cover;
         }
         .home-text {

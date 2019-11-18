@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import static com.meetkiki.blog.constants.TaleConst.CLASSPATH;
 import static com.meetkiki.blog.constants.TaleConst.COMMENT_APPROVED;
+import static com.meetkiki.blog.constants.TaleConst.INSTALL;
 import static io.github.biezhi.anima.Anima.select;
 
 
@@ -47,6 +48,8 @@ public class SiteService {
 
     @Autowired
     private CommentsService commentsService;
+    @Autowired
+    private OptionsService optionsService;
 
     public MapCache mapCache = new MapCache();
 
@@ -62,15 +65,8 @@ public class SiteService {
         users.setCreated(DateUtils.nowUnix());
         Integer uid = users.save().asInt();
 
-        try {
-            String cp   = SiteService.class.getClassLoader().getResource("").getPath();
-            File   lock = new File(cp + "install.lock");
-            lock.createNewFile();
-            TaleConst.INSTALLED = Boolean.TRUE;
-            new Logs("初始化站点", null, "", uid).save();
-        } catch (Exception e) {
-            throw new ValidatorException("初始化站点失败");
-        }
+        optionsService.saveOption(INSTALL,"true");
+        new Logs("初始化站点", null, "", uid).save();
     }
 
     /**

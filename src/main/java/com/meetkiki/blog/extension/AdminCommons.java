@@ -22,7 +22,7 @@ public class AdminCommons {
     }
 
     public static String cdnURL(){
-        return Commons.site_option(Types.CDN_URL, "");
+        return Commons.site_option(Types.CDN_URL, "/static");
     }
 
     public static String siteTheme() {

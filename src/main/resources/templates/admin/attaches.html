@@ -77,7 +77,7 @@
                         <a :href="'${attachURL()}' + item.fkey" target="_blank">
                             <img v-if="item.ftype == 'image'" class="attach-img" :src="'${attachURL()}' + item.fkey"
                                  :title="item.fname"/>
-                            <img v-if="item.ftype != 'image'" class="attach-img" src="/admin/images/attach.png"
+                            <img v-if="item.ftype != 'image'" class="attach-img" src="${cdnURL()}/images/attach.png"
                                  :title="item.fname"/>
                         </a>
                         <div class="clearfix m-t-10">
@@ -187,11 +187,12 @@
         filesizeBase: 1024,//定义字节算法 默认1000
         maxFiles: $.constant().MAX_FILES,//最大文件数量
         maxFilesize: '${maxFileSize()}', //MB
+        paramName: "files",
         fallback: function () {
             tale.alertError('暂不支持您的浏览器上传!');
         },
         uploadMultiple: true,
-        dictFileTooBig: '您的文件超过' + ${max_file_size} +'MB!',
+        dictFileTooBig: '您的文件超过' + ${maxFileSize()} +'MB!',
         dictInvalidInputType: '不支持您上传的类型',
         dictMaxFilesExceeded: '您的文件超过' + $.constant().MAX_FILES + '个!',
         headers: {
@@ -203,8 +204,8 @@
                 vm.load(1);
             });
             this.on('error', function (a, errorMessage, result) {
-                if (!result.success && result.msg) {
-                    tale.alertError(result.msg || '上传失败');
+                if (a.status == 'error') {
+                    tale.alertError(errorMessage || '上传失败');
                 }
             });
             this.on('maxfilesreached', function () {

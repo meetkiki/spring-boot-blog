@@ -41,6 +41,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import static com.meetkiki.blog.constants.TaleConst.CLASSPATH;
+import static com.meetkiki.blog.constants.TaleConst.INSTALL;
 import static com.meetkiki.blog.constants.TaleConst.OPTION_SAFE_REMEMBER_ME;
 
 
@@ -138,9 +139,9 @@ public class Bootstrap {
         if (StringUtils.hasText(ips)) {
             TaleConst.BLOCK_IPS.addAll(Arrays.asList(ips.split(",")));
         }
-        if (Files.exists(Paths.get(CLASSPATH + "install.lock"))) {
-            TaleConst.INSTALLED = Boolean.TRUE;
-        }
+
+        String install = TaleConst.OPTIONS.getOrDefault(INSTALL, "false");
+        TaleConst.OPTIONS.put(INSTALL,install);
 
         String rememberToken = optionsService.getOption(OPTION_SAFE_REMEMBER_ME);
         if (StringUtils.hasText(rememberToken)) {

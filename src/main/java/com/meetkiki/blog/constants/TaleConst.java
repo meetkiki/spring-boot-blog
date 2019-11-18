@@ -22,7 +22,6 @@ public class TaleConst {
     public static       String      LOGIN_SESSION_KEY  = "login_user";
     public static       String      REMEMBER_TOKEN     = "";
     public static       Map<String,String> OPTIONS            = new ConcurrentReferenceHashMap<>();
-    public static       Boolean     INSTALLED          = false;
     public static       Boolean     ENABLED_CDN        = true;
 
     static {
@@ -74,11 +73,6 @@ public class TaleConst {
     public static final String SLUG_TAGS        = "tags";
 
     /**
-     * 静态资源URI
-     */
-    public static final String STATIC_URI = "/static";
-
-    /**
      * 安装页面URI
      */
     public static final String INSTALL_URI = "/install";
@@ -123,5 +117,6 @@ public class TaleConst {
     public static final String OPTION_ALLOW_COMMENT_AUDIT = "allow_comment_audit";
     public static final String OPTION_ALLOW_CLOUD_CDN     = "allow_cloud_CDN";
     public static final String OPTION_SAFE_REMEMBER_ME    = "safe_remember_me";
+    public static final String INSTALL                    = "install";
 
 }

@@ -412,7 +412,7 @@ public class TaleUtils {
 
     public static String fileExt(String fname) {
         if (StringUtils.isEmpty(fname) || fname.indexOf('.') == -1) {
-            return null;
+            return "temp";
         }
         return fname.substring(fname.lastIndexOf('.') + 1);
     }

@@ -18,7 +18,7 @@
     #if(allow_cloud_CDN() == "true")
     <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
     #else
-    <script src="/plugins/jquery/3.2.1/jquery.min.js"></script>
+    <script src="${cdnURL()}/plugins/jquery/3.2.1/jquery.min.js"></script>
     #end
 
     <script src="${theme_url('/static/js/highlight.min.js')}"></script>

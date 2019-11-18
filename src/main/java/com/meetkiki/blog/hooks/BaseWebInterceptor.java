@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import static com.meetkiki.blog.constants.TaleConst.INSTALL;
 import static io.github.biezhi.anima.Anima.select;
 
 @Slf4j
@@ -20,9 +21,7 @@ public class BaseWebInterceptor extends HandlerInterceptorAdapter {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
-        String uri = request.getRequestURI();
         String ip  = IpUtil.getIpAddr(request);
-
         // 禁止该ip访问
         if (TaleConst.BLOCK_IPS.contains(ip)) {
             try (PrintWriter writer = response.getWriter()) {
@@ -30,30 +29,22 @@ public class BaseWebInterceptor extends HandlerInterceptorAdapter {
             }
             return false;
         }
-
         log.info("IP: {}, UserAgent: {}", ip, request.getHeader("User-Agent"));
-
-        if (uri.startsWith(TaleConst.STATIC_URI)) {
-            return true;
-        }
-
-        if (!TaleConst.INSTALLED && !uri.startsWith(TaleConst.INSTALL_URI)) {
+        boolean install = Boolean.parseBoolean(TaleConst.OPTIONS.getOrDefault(INSTALL, "false"));
+        // 如果未安装
+        if (!install){
             response.sendRedirect(TaleConst.INSTALL_URI);
             return false;
         }
-
-        if (TaleConst.INSTALLED) {
-            return isRedirect(request,response);
-        }
-        return true;
+        return isRedirect(request,response);
     }
 
 
     private boolean isRedirect(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Users user = TaleUtils.getLoginUser();
         String uri  = request.getRequestURI();
         if (uri.startsWith(TaleConst.ADMIN_URI) && !uri.startsWith(TaleConst.LOGIN_URI)) {
             request.setAttribute(TaleConst.PLUGINS_MENU_NAME, TaleConst.PLUGIN_MENUS);
+            Users user = TaleUtils.getLoginUser();
             if(null != user){
                 return true;
             }

@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 @JetAnnotations.Functions
 public class Commons {
 
-    //private static final String TEMPLATES = "/templates/";
+    private static final String TEMPLATES = "/templates/";
 
     public static void setSiteService(SiteService ss) {
         Theme.setSiteService(ss);
@@ -161,7 +161,7 @@ public class Commons {
      * @return
      */
     public static String theme_url() {
-        return Commons.site_url(File.separatorChar + BaseController.THEME);
+        return Commons.site_url(TEMPLATES + BaseController.THEME);
     }
 
     /**
@@ -171,7 +171,7 @@ public class Commons {
      * @return
      */
     public static String theme_url(String sub) {
-        return Commons.site_url(File.separatorChar + BaseController.THEME + sub);
+        return Commons.site_url(TEMPLATES + BaseController.THEME + sub);
     }
 
 
