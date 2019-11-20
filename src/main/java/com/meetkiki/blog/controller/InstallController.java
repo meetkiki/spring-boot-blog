@@ -20,8 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static com.meetkiki.blog.constants.TaleConst.CLASSPATH;
-import static com.meetkiki.blog.constants.TaleConst.OPTION_ALLOW_INSTALL;
+import static com.meetkiki.blog.constants.TaleConst.*;
 
 
 @Slf4j
@@ -39,9 +38,9 @@ public class InstallController extends BaseController{
      */
     @GetMapping("install")
     public String index(HttpServletRequest request) {
-        boolean existInstall   = Files.exists(Paths.get(CLASSPATH + "install.lock"));
+        boolean install = Boolean.parseBoolean(OPTIONS.getOrDefault(INSTALL, "false"));
         boolean allowReinstall = Boolean.parseBoolean(TaleConst.OPTIONS.getOrDefault(OPTION_ALLOW_INSTALL, "false"));
-        request.setAttribute("is_install", !allowReinstall && existInstall);
+        request.setAttribute("is_install", !allowReinstall && install);
         return "install";
     }
 
@@ -71,8 +70,8 @@ public class InstallController extends BaseController{
     }
 
     private boolean isRepeatInstall() {
-        return Files.exists(Paths.get(CLASSPATH + "install.lock"))
-                && Integer.parseInt(TaleConst.OPTIONS.getOrDefault("allow_install", "0")) != 1;
+        return Boolean.parseBoolean(TaleConst.OPTIONS.getOrDefault(INSTALL, "false"))
+                && !Boolean.parseBoolean(TaleConst.OPTIONS.getOrDefault(OPTION_ALLOW_INSTALL, "false"));
     }
 
 }

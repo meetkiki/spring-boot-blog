@@ -12,11 +12,6 @@ app:
       size: 20480
   support_163_music: true
   support_gist: true
-mvc:
-  view:
-    404: /templates/comm/error_404.html
-    500: /templates/comm/error_500.html
-  statis: /upload
 
 
 spring:

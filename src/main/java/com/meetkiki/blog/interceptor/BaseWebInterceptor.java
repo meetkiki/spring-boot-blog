@@ -1,4 +1,4 @@
-package com.meetkiki.blog.hooks;
+package com.meetkiki.blog.interceptor;
 
 import com.meetkiki.blog.constants.TaleConst;
 import com.meetkiki.blog.model.entity.Users;

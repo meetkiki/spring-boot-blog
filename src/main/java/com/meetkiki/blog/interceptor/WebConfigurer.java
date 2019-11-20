@@ -1,4 +1,4 @@
-package com.meetkiki.blog.hooks;
+package com.meetkiki.blog.interceptor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,8 +12,8 @@ public class WebConfigurer implements WebMvcConfigurer {
 	 public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(BaseWebInterceptor())
 				.addPathPatterns("/**")
-				.excludePathPatterns("/install")
-				.excludePathPatterns("/error")
+				.excludePathPatterns("/500")
+				.excludePathPatterns("/404")
 				// 排除静态资源
 				.excludePathPatterns("/static/**")
 				.excludePathPatterns("/templates/**");
