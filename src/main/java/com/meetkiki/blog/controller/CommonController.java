@@ -13,7 +13,7 @@ public class CommonController extends BaseController{
      */
     @RequestMapping("/404")
     public String error404() {
-        return "/comm/error_404.html";
+        return "/comm/error_404";
     }
 
     /**
@@ -22,6 +22,6 @@ public class CommonController extends BaseController{
      */
     @RequestMapping("/500")
     public String error500() {
-        return "/comm/error_500.html";
+        return "/comm/error_500";
     }
 }

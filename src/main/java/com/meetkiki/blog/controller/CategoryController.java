@@ -50,7 +50,7 @@ public class CategoryController extends BaseController {
     /**
      * 某个分类详情页
      */
-    @GetMapping(value = {"category/:keyword", "category/{keyword}.html"})
+    @GetMapping(value = {"category/{keyword}", "category/{keyword}.html"})
     public String categories(HttpServletRequest request, @PathVariable String keyword, @RequestParam(defaultValue = "12") int limit) {
         return this.categories(request, keyword, 1, limit);
     }
@@ -58,7 +58,7 @@ public class CategoryController extends BaseController {
     /**
      * 某个分类详情页分页
      */
-    @GetMapping(value = {"category/:keyword/:page", "category/{keyword}/{page}.html"})
+    @GetMapping(value = {"category/{keyword}/{page}", "category/{keyword}/{page}.html"})
     public String categories(HttpServletRequest request, @PathVariable String keyword,
                              @PathVariable int page, @RequestParam(defaultValue = "12") int limit) {
 
@@ -100,7 +100,7 @@ public class CategoryController extends BaseController {
      *
      * @param name 标签名
      */
-    @GetMapping(value = {"tag/:name", "tag/{name}.html"})
+    @GetMapping(value = {"tag/{name}", "tag/{name}.html"})
     public String tagPage(HttpServletRequest request, @PathVariable String name, @RequestParam(defaultValue = "12") int limit) {
         return this.tags(request, name, 1, limit);
     }
@@ -108,7 +108,7 @@ public class CategoryController extends BaseController {
     /**
      * 标签下文章分页
      */
-    @GetMapping(value = {"tag/:name/:page", "tag/{name}/{page}.html"})
+    @GetMapping(value = {"tag/{name}/{page}", "tag/{name}/{page}.html"})
     public String tags(HttpServletRequest request, @PathVariable String name, @PathVariable int page, @RequestParam(defaultValue = "12") int limit) {
         page = page < 0 || page > TaleConst.MAX_PAGE ? 1 : page;
         Metas metaDto = metasService.getMeta(Types.TAG, name);
