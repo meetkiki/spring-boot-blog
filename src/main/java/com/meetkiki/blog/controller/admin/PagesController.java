@@ -71,6 +71,7 @@ public class PagesController extends BaseController {
     public String pages(){
         return "admin/pages";
     }
+
     @GetMapping("attaches")
     public String attaches(){
         return "admin/attaches";
@@ -104,6 +105,11 @@ public class PagesController extends BaseController {
     @GetMapping("article/edit/{cid}")
     public String editArticle(@PathVariable String cid) {
         return "admin/article/edit";
+    }
+
+    @GetMapping("page/new")
+    public String pageNew(){
+        return "admin/page/new";
     }
 
     @GetMapping("page/edit/{cid}")

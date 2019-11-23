@@ -12,8 +12,7 @@ public class WebConfigurer implements WebMvcConfigurer {
 	 public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(BaseWebInterceptor())
 				.addPathPatterns("/**")
-				.excludePathPatterns("/500")
-				.excludePathPatterns("/404")
+				.excludePathPatterns("/install")
 				// 排除静态资源
 				.excludePathPatterns("/static/**")
 				.excludePathPatterns("/templates/**");

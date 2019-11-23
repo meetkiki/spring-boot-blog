@@ -2,6 +2,7 @@ package com.meetkiki.blog.bootstrap;
 
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ResourceUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,6 +15,7 @@ import java.sql.Statement;
 import java.util.stream.Collectors;
 
 import static com.meetkiki.blog.constants.TaleConst.CLASSPATH;
+import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
 
 /**
  * SQLite 数据库操作
@@ -59,7 +61,7 @@ public final class SqliteJdbc {
             ResultSet  rs        = statement.executeQuery("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='t_options'");
             int        count     = rs.getInt(1);
             if (count == 0) {
-                String            cp  = SqliteJdbc.class.getClassLoader().getResource("").getPath();
+                String            cp  = ResourceUtils.getURL(CLASSPATH_URL_PREFIX).getPath();
                 InputStreamReader isr = new InputStreamReader(new FileInputStream(cp + "schema.sql"), "UTF-8");
 
                 String sql = new BufferedReader(isr).lines().collect(Collectors.joining("\n"));

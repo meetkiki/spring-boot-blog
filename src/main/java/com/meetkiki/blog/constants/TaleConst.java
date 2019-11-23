@@ -8,6 +8,8 @@ import org.springframework.util.ResourceUtils;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
+
 /**
  * Tale 常量存储
  *
@@ -26,7 +28,7 @@ public class TaleConst {
 
     static {
         try {
-            CLASSPATH = ResourceUtils.getURL("classpath:").getPath();
+            CLASSPATH = ResourceUtils.getURL(CLASSPATH_URL_PREFIX).getPath();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

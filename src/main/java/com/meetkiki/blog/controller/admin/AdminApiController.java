@@ -318,9 +318,8 @@ public class AdminApiController extends BaseController {
 
     @SysLog("保存系统配置")
     @PostMapping("options/save")
-    public RestResponse<?> saveOptions(HttpServletRequest request) {
-        Map<String, String[]> querys = request.getParameterMap();
-        querys.forEach((k, v) -> optionsService.saveOption(k, v[0]));
+    public RestResponse<?> saveOptions(@RequestParam Map<String,String> params) {
+        params.forEach((k, v) -> optionsService.saveOption(k,v));
         TaleConst.OPTIONS = optionsService.getOptions();
         return RestResponse.ok();
     }

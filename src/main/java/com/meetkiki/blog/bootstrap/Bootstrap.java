@@ -87,7 +87,7 @@ public class Bootstrap {
         config.put("jetx.output.encoding","utf-8");
         // 模板加载器
         config.put("jetx.template.loaders",MyResourceLoader.class.getName());
-        templateViewResolver.setContentType("text/html");
+//        templateViewResolver.setContentType("text/html");
         return templateViewResolver;
     }
 

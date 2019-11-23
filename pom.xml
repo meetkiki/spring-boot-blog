@@ -12,6 +12,7 @@
     <artifactId>blog</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>blog</name>
+    <packaging>war</packaging>
     <description>blog project for Spring Boot</description>
 
     <properties>

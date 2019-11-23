@@ -29,6 +29,8 @@ public class BaseWebInterceptor extends HandlerInterceptorAdapter {
             }
             return false;
         }
+        // 中文乱码
+        response.setContentType("text/html;charset=utf-8");
         log.info("IP: {}, UserAgent: {}", ip, request.getHeader("User-Agent"));
         boolean install = Boolean.parseBoolean(TaleConst.OPTIONS.getOrDefault(INSTALL, "false"));
         // 如果未安装
