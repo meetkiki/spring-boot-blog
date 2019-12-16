@@ -383,7 +383,7 @@ public class AdminApiController extends BaseController {
     @GetMapping("themes")
     public RestResponse getThemes() {
         // 读取主题
-        String         themesDir  = CLASSPATH + "templates/themes";
+        String         themesDir  = CLASSPATH + "templates" + File.separatorChar + "themes";
         File[]         themesFile = new File(themesDir).listFiles();
         List<ThemeDto> themes     = new ArrayList<>(themesFile.length);
         for (File f : themesFile) {

@@ -28,7 +28,7 @@ public class TaleConst {
 
     static {
         try {
-            CLASSPATH = ResourceUtils.getURL(CLASSPATH_URL_PREFIX).getPath();
+            CLASSPATH = ResourceUtils.getURL(ResourceUtils.CLASSPATH_URL_PREFIX).getPath();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
