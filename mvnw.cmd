@@ -1,5 +1,5 @@
 @REM ----------------------------------------------------------------------------bb
-@REM Licensed to the Apache Software Foundation (ASF) under one
+@REM Licensed to the Apa访问如歌如画合同已经
 @REM or more contributor license agreements.  See the NOTICE file
 @REM distributed with this work for additional information
 @REM regarding copyright ownership.  The ASF licenses this file
