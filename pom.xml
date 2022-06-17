@@ -23,7 +23,7 @@
         <sqlite.version>3.21.0.1</sqlite.version>
         <commonmark.version>0.11.0</commonmark.version>
         <rome.version>1.0</rome.version>
-        <fastjson.version>1.2.4</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
     </properties>
 
     <dependencies>
