@@ -20,7 +20,7 @@
         <java.version>1.8</java.version>
         <emoji.version>4.0.0</emoji.version>
         <anima.version>0.2.5</anima.version>
-        <sqlite.version>3.21.0.1</sqlite.version>
+        <sqlite.version>3.41.2.2</sqlite.version>
         <commonmark.version>0.11.0</commonmark.version>
         <rome.version>1.0</rome.version>
         <fastjson.version>1.2.4</fastjson.version>
